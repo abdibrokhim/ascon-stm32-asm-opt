@@ -1,0 +1,2 @@
+../Core/Inc/crypto_hash/asconxof128/bi32/hash.c:68:5:ascon_xof	5
+../Core/Inc/crypto_hash/asconxof128/bi32/hash.c:79:5:crypto_hash	1

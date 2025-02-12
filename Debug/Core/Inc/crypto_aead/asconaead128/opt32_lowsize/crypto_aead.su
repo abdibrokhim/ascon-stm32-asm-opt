@@ -1,0 +1,2 @@
+../Core/Inc/crypto_aead/asconaead128/opt32_lowsize/crypto_aead.c:34:5:crypto_aead_encrypt	8	static
+../Core/Inc/crypto_aead/asconaead128/opt32_lowsize/crypto_aead.c:46:5:crypto_aead_decrypt	64	static

@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "*.tsx": "typescriptreact",
+        "main.h": "c",
+        "api.h": "c",
+        "crypto_aead.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "crypto_hash.h": "c",
+        "crypto_auth.h": "c",
+        "stdio.h": "c",
+        "__availability": "c",
+        "crypto_aead_hash.h": "c",
+        "printstate.h": "c",
+        "permutations.h": "c",
+        "stdint.h": "c",
+        "round.h": "c",
+        "constants.h": "c",
+        "ascon.h": "c",
+        "stm32f103xb.h": "c",
+        "stm32f1xx_hal_rcc.h": "c"
+    }
+}

@@ -1,0 +1,5 @@
+../Core/Inc/crypto_hash/asconxof128/neon/hash.c:24:18:ascon_inithash	4	static
+../Core/Inc/crypto_hash/asconxof128/neon/hash.c:36:18:ascon_absorb	40	static,ignoring_inline_asm
+../Core/Inc/crypto_hash/asconxof128/neon/hash.c:52:18:ascon_squeeze	32	static,ignoring_inline_asm
+../Core/Inc/crypto_hash/asconxof128/neon/hash.c:68:5:ascon_xof	64	static
+../Core/Inc/crypto_hash/asconxof128/neon/hash.c:79:5:crypto_hash	64	static

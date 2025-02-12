@@ -1,0 +1,2 @@
+../Core/Inc/crypto_hash/asconxof128/opt32_lowsize/hash.c:68:5:ascon_xof	88	static
+../Core/Inc/crypto_hash/asconxof128/opt32_lowsize/hash.c:79:5:crypto_hash	32	static

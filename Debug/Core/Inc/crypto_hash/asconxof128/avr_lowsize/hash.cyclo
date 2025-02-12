@@ -1,0 +1,2 @@
+../Core/Inc/crypto_hash/asconxof128/avr_lowsize/hash.c:29:5:ascon_xof	1
+../Core/Inc/crypto_hash/asconxof128/avr_lowsize/hash.c:42:5:crypto_hash	1

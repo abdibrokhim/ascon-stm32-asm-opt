@@ -1,0 +1,2 @@
+../Core/Inc/crypto_hash/asconxof128/bi32_armv6m/hash.c:68:5:ascon_xof	128	static,ignoring_inline_asm
+../Core/Inc/crypto_hash/asconxof128/bi32_armv6m/hash.c:79:5:crypto_hash	32	static
