@@ -6,7 +6,3 @@
 #define CRYPTO_NOOVERLAP 1
 #define ASCON_AEAD_RATE 16
 #define ASCON_VARIANT 1
-#define CRYPTO_BYTES 64
-#define CRYPTO_AEAD
-// #define CRYPTO_HASH 
-// #define CRYPTO_AUTH 

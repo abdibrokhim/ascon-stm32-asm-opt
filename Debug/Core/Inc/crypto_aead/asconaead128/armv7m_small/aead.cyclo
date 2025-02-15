@@ -1,0 +1,4 @@
+../Core/Inc/crypto_aead/asconaead128/armv7m_small/aead.c:200:5:ascon_aead_encrypt	11
+../Core/Inc/crypto_aead/asconaead128/armv7m_small/aead.c:214:5:ascon_aead_decrypt	11
+../Core/Inc/crypto_aead/asconaead128/armv7m_small/aead.c:227:5:crypto_aead_encrypt	1
+../Core/Inc/crypto_aead/asconaead128/armv7m_small/aead.c:249:5:crypto_aead_decrypt	2

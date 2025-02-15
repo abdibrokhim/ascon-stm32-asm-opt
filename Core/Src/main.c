@@ -82,7 +82,7 @@ int ascon_main() {
     HAL_Delay(5000);                                          // Wait 5 seconds
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
   uint32_t start_time = HAL_GetTick();
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20000; i++) {
 
       result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, NULL, n, k);
 

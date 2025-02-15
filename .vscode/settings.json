@@ -18,6 +18,8 @@
         "constants.h": "c",
         "ascon.h": "c",
         "stm32f103xb.h": "c",
-        "stm32f1xx_hal_rcc.h": "c"
+        "stm32f1xx_hal_rcc.h": "c",
+        "forceinline.h": "c",
+        "word.h": "c"
     }
 }
