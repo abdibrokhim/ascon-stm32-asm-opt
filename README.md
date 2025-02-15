@@ -1,3 +1,5 @@
+probably draft
+
 parent repo: https://github.com/abdibrokhim/code-optimization-arm
 
 resources:
@@ -29,6 +31,85 @@ loop 20000 times:
 
 Quick note: xx:yy seconds means xx seconds and yy milliseconds. yy -> goes from 0 to 99.
 
+[original_impl]
+time: 10:57 seconds. (c and inline asm implementation)
+
+```h
+forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
+                            const uint8_t* E) {
+  uint32_t tmp0, tmp1;
+  __asm__ __volatile__(
+      "rbegin_%=:;\n\t"
+      "ldrb %[tmp1], [%[C]], #1\n\t"
+      "eor %[x0_l], %[x0_l], %[x4_l]\n\t"
+      "eor %[x4_l], %[x4_l], %[x3_l]\n\t"
+      "eor %[x2_l], %[x2_l], %[x1_l]\n\t"
+      "orn %[tmp0], %[x4_l], %[x0_l]\n\t"
+      "eor %[x2_l], %[x2_l], %[tmp1]\n\t"
+      "bic %[tmp1], %[x2_l], %[x1_l]\n\t"
+      "eor %[x0_l], %[x0_l], %[tmp1]\n\t"
+      "orn %[tmp1], %[x3_l], %[x4_l]\n\t"
+      "eor %[x2_l], %[x2_l], %[tmp1]\n\t"
+      "bic %[tmp1], %[x1_l], %[x0_l]\n\t"
+      "eor %[x4_l], %[x4_l], %[tmp1]\n\t"
+      "and %[tmp1], %[x3_l], %[x2_l]\n\t"
+      "eor %[x1_l], %[x1_l], %[tmp1]\n\t"
+      "eor %[x3_l], %[x3_l], %[tmp0]\n\t"
+      "ldrb %[tmp1], [%[C]], #1\n\t"
+      "eor %[x1_l], %[x1_l], %[x0_l]\n\t"
+      "eor %[x3_l], %[x3_l], %[x2_l]\n\t"
+      "eor %[x0_l], %[x0_l], %[x4_l]\n\t"
+      "eor %[x0_h], %[x0_h], %[x4_h]\n\t"
+      "eor %[x4_h], %[x4_h], %[x3_h]\n\t"
+      "eor %[x2_h], %[x2_h], %[tmp1]\n\t"
+      "eor %[x2_h], %[x2_h], %[x1_h]\n\t"
+      "orn %[tmp0], %[x4_h], %[x0_h]\n\t"
+      "bic %[tmp1], %[x2_h], %[x1_h]\n\t"
+      "eor %[x0_h], %[x0_h], %[tmp1]\n\t"
+      "orn %[tmp1], %[x3_h], %[x4_h]\n\t"
+      "eor %[x2_h], %[x2_h], %[tmp1]\n\t"
+      "bic %[tmp1], %[x1_h], %[x0_h]\n\t"
+      "eor %[x4_h], %[x4_h], %[tmp1]\n\t"
+      "and %[tmp1], %[x3_h], %[x2_h]\n\t"
+      "eor %[x1_h], %[x1_h], %[tmp1]\n\t"
+      "eor %[x3_h], %[x3_h], %[tmp0]\n\t"
+      "eor %[x1_h], %[x1_h], %[x0_h]\n\t"
+      "eor %[x3_h], %[x3_h], %[x2_h]\n\t"
+      "eor %[x0_h], %[x0_h], %[x4_h]\n\t"
+      "eor %[tmp0], %[x0_l], %[x0_h], ror #4\n\t"
+      "eor %[tmp1], %[x0_h], %[x0_l], ror #5\n\t"
+      "eor %[x0_h], %[x0_h], %[tmp0], ror #10\n\t"
+      "eor %[x0_l], %[x0_l], %[tmp1], ror #9\n\t"
+      "eor %[tmp0], %[x1_l], %[x1_l], ror #11\n\t"
+      "eor %[tmp1], %[x1_h], %[x1_h], ror #11\n\t"
+      "eor %[x1_h], %[x1_h], %[tmp0], ror #20\n\t"
+      "eor %[x1_l], %[x1_l], %[tmp1], ror #19\n\t"
+      "eor %[tmp0], %[x2_l], %[x2_h], ror #2\n\t"
+      "eor %[tmp1], %[x2_h], %[x2_l], ror #3\n\t"
+      "eor %[x2_h], %[x2_h], %[tmp0], ror #1\n\t"
+      "eor %[x2_l], %[x2_l], %[tmp1]\n\t"
+      "eor %[tmp0], %[x3_l], %[x3_h], ror #3\n\t"
+      "eor %[tmp1], %[x3_h], %[x3_l], ror #4\n\t"
+      "eor %[x3_l], %[x3_l], %[tmp0], ror #5\n\t"
+      "eor %[x3_h], %[x3_h], %[tmp1], ror #5\n\t"
+      "eor %[tmp0], %[x4_l], %[x4_l], ror #17\n\t"
+      "eor %[tmp1], %[x4_h], %[x4_h], ror #17\n\t"
+      "eor %[x4_h], %[x4_h], %[tmp0], ror #4\n\t"
+      "eor %[x4_l], %[x4_l], %[tmp1], ror #3\n\t"
+      "cmp %[C], %[E]\n\t"
+      "bne rbegin_%=\n\t"
+      :
+      [x0_l] "+r"(s->w[0][0]), [x0_h] "+r"(s->w[0][1]), [x1_l] "+r"(s->w[1][0]),
+      [x1_h] "+r"(s->w[1][1]), [x2_l] "+r"(s->w[2][0]), [x2_h] "+r"(s->w[2][1]),
+      [x3_l] "+r"(s->w[3][0]), [x3_h] "+r"(s->w[3][1]), [x4_l] "+r"(s->w[4][0]),
+      [x4_h] "+r"(s->w[4][1]), [C] "+r"(C), [E] "+r"(E), [tmp0] "=r"(tmp0),
+      [tmp1] "=r"(tmp1)
+      :
+      : "cc");
+}
+```
+
+[opt_impl]
 time: 10:44 seconds. (1.98% faster than [4])
 
 ```h
@@ -112,8 +193,8 @@ forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
 }
 ```
 
-
-time: 09:56 seconds. (7.52% faster than [4])
+[opt_impl]
+time: 09:56 seconds. (9.28% faster than [4])
 ```h
 /*
  * Updated for STM32 devices (Cortex‑M3/M4/M7).
