@@ -32,7 +32,7 @@ loop 20000 times:
 Quick note: xx:yy seconds means xx seconds and yy milliseconds. yy -> goes from 0 to 99.
 
 [original_impl]
-time: 10:57 seconds. (c and inline asm implementation)
+time: ~10:57 seconds. (c and inline asm implementation)
 
 ```h
 forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
@@ -110,7 +110,7 @@ forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
 ```
 
 [opt_impl]
-time: 10:44 seconds. (1.98% faster than [4])
+time: ~10:44 seconds. (1.98% faster than [4])
 
 ```h
 forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
@@ -194,7 +194,7 @@ forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
 ```
 
 [opt_impl]
-time: 09:56 seconds. (9.28% faster than [4])
+time: ~09:56 seconds. (9.28% faster than [4])
 ```h
 /*
  * Updated for STM32 devices (Cortex‑M3/M4/M7).
@@ -437,3 +437,141 @@ forceinline void PROUNDS(ascon_state_t* s, int nr) {
 
 #endif /* ROUND_H_ */
 ```
+
+
+
+[opt_impl]
+time: ~09:44 seconds. (11.11% faster than [4])
+
+Yes, there are a few more ideas we can explore:
+
+1. **Interleaving Low‑ and High‑Half Operations:**  
+   Instead of processing the low half fully then the high half, we can interleave some of these operations. This can allow the Cortex‑M pipeline to work on independent data streams concurrently, reducing stalls due to data dependencies.
+
+2. **Full Unrolling (When Feasible):**  
+   If the number of rounds is fixed and code size is not a major concern, completely unrolling the loop can remove the branch overhead entirely. This lets the processor “see” all the instructions and schedule them more aggressively.
+
+3. **Exploiting DSP Extensions:**  
+   Some STM32 variants (like Cortex‑M4/M7 with DSP extensions) have specialized instructions for bit‑manipulation. In some cases, these might allow you to combine or accelerate certain rotate or bit‑field operations.
+
+4. **Placing Constants in Fast Memory:**  
+   By ensuring the round constants are stored in tightly coupled memory (TCM) or using compiler directives to align them properly, we can reduce access latency.
+
+5. **Writing a Dedicated Assembly Routine:**  
+   Although inline assembly gives some control, writing a hand‑optimized assembly routine (with a custom register allocation and scheduling) might squeeze out a few extra cycles.
+
+Below is an updated version of the `ROUND_LOOP` function that interleaves some of the low‑ and high‑half computations. Comments explain the changes:
+
+---
+
+```c
+forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C,
+                            const uint8_t* E) {
+  uint32_t tmp0, tmp1;
+  __asm__ __volatile__(
+      "rbegin_%=:\n\t"
+      /* --- Load round constant (aligned load of 16 bits) --- */
+      "ldrh   %[tmp1], [%[C]], #2\n\t"       // Load 16-bit constant; post-increment pointer
+      "ubfx   %[tmp0], %[tmp1], #8, #8\n\t"    // Extract high byte constant
+      "and    %[tmp1], %[tmp1], #0xFF\n\t"     // Extract low byte constant
+
+      /* --- Interleaved processing for low and high halves --- */
+      /* Start by mixing x0 and x4 for both halves concurrently */
+      "eor    %[x0_l], %[x0_l], %[x4_l]\n\t"    // Low: x0 ^= x4
+      "eor    %[x0_h], %[x0_h], %[x4_h]\n\t"    // High: x0 ^= x4
+
+      /* Process mixing x2 and x1 and inject constants in parallel */
+      "eor    %[x2_l], %[x2_l], %[x1_l]\n\t"    // Low: x2 ^= x1
+      "eor    %[x2_l], %[x2_l], %[tmp1]\n\t"    // Low: x2 ^= low-byte constant
+      "eor    %[x2_h], %[x2_h], %[x1_h]\n\t"    // High: x2 ^= x1
+      "eor    %[x2_h], %[x2_h], %[tmp0]\n\t"    // High: x2 ^= high-byte constant
+
+      /* Now compute low-half intermediate values */
+      "orn    %[tmp1], %[x4_l], %[x0_l]\n\t"     // Low: tmp1 = ~(x4_l) OR x0_l
+      "bic    %[tmp1], %[x2_l], %[x1_l]\n\t"     // Low: tmp1 &= ~(x1_l)
+      "eor    %[x0_l], %[x0_l], %[tmp1]\n\t"     // Low: update x0_l
+
+      /* Compute high-half intermediate values concurrently */
+      "orn    %[tmp0], %[x4_h], %[x0_h]\n\t"      // High: tmp0 = ~(x4_h) OR x0_h
+      "bic    %[tmp1], %[x2_h], %[x1_h]\n\t"      // High: tmp1 = ~(x2_h) & ~(x1_h)
+      "eor    %[x0_h], %[x0_h], %[tmp1]\n\t"      // High: update x0_h
+
+      /* Continue low-half processing */
+      "orn    %[tmp1], %[x3_l], %[x4_l]\n\t"     // Low: compute secondary temporary
+      "eor    %[x2_l], %[x2_l], %[tmp1]\n\t"     // Low: update x2_l
+      "bic    %[tmp1], %[x1_l], %[x0_l]\n\t"     // Low: further refine tmp1
+      "eor    %[x4_l], %[x4_l], %[tmp1]\n\t"     // Low: update x4_l
+      "and    %[tmp1], %[x3_l], %[x2_l]\n\t"     // Low: combine bits from x3_l and x2_l
+      "eor    %[x1_l], %[x1_l], %[tmp1]\n\t"     // Low: update x1_l
+      "eor    %[x3_l], %[x3_l], %[tmp0]\n\t"     // Low: inject high-byte constant into x3_l
+
+      /* Continue high-half processing */
+      "orn    %[tmp1], %[x3_h], %[x4_h]\n\t"      // High: compute secondary temporary
+      "eor    %[x2_h], %[x2_h], %[tmp1]\n\t"      // High: update x2_h
+      "bic    %[tmp1], %[x1_h], %[x0_h]\n\t"      // High: refine processing
+      "eor    %[x4_h], %[x4_h], %[tmp1]\n\t"      // High: update x4_h
+      "and    %[tmp1], %[x3_h], %[x2_h]\n\t"      // High: combine bits from x3_h and x2_h
+      "eor    %[x1_h], %[x1_h], %[tmp1]\n\t"      // High: update x1_h
+      "eor    %[x3_h], %[x3_h], %[tmp0]\n\t"      // High: finalize high-half processing
+
+      /* --- Linear layer: rotations and further mixing --- */
+      "eor    %[tmp0], %[x0_l], %[x0_h], ror #4\n\t"  // x0 mixing with rotation (#4)
+      "eor    %[tmp1], %[x0_h], %[x0_l], ror #5\n\t"   // Alternate x0 mix (#5)
+      "eor    %[x0_h], %[x0_h], %[tmp0], ror #10\n\t"  // Update x0_h (#10)
+      "eor    %[x0_l], %[x0_l], %[tmp1], ror #9\n\t"   // Update x0_l (#9)
+
+      "eor    %[tmp0], %[x1_l], %[x1_l], ror #11\n\t"  // x1 low rotation (#11)
+      "eor    %[tmp1], %[x1_h], %[x1_h], ror #11\n\t"  // x1 high rotation (#11)
+      "eor    %[x1_h], %[x1_h], %[tmp0], ror #20\n\t"  // Update x1_h (#20)
+      "eor    %[x1_l], %[x1_l], %[tmp1], ror #19\n\t"  // Update x1_l (#19)
+
+      "eor    %[tmp0], %[x2_l], %[x2_h], ror #2\n\t"   // x2 rotation (#2)
+      "eor    %[tmp1], %[x2_h], %[x2_l], ror #3\n\t"   // x2 alternate rotation (#3)
+      "eor    %[x2_h], %[x2_h], %[tmp0], ror #1\n\t"    // Update x2_h (#1)
+      "eor    %[x2_l], %[x2_l], %[tmp1]\n\t"           // Update x2_l
+
+      "eor    %[tmp0], %[x3_l], %[x3_h], ror #3\n\t"    // x3 rotation (#3)
+      "eor    %[tmp1], %[x3_h], %[x3_l], ror #4\n\t"    // x3 alternate rotation (#4)
+      "eor    %[x3_l], %[x3_l], %[tmp0], ror #5\n\t"    // Update x3_l (#5)
+      "eor    %[x3_h], %[x3_h], %[tmp1], ror #5\n\t"    // Update x3_h (#5)
+
+      "eor    %[tmp0], %[x4_l], %[x4_l], ror #17\n\t"   // x4 rotation (#17)
+      "eor    %[tmp1], %[x4_h], %[x4_h], ror #17\n\t"   // x4 alternate rotation (#17)
+      "eor    %[x4_h], %[x4_h], %[tmp0], ror #4\n\t"    // Update x4_h (#4)
+      "eor    %[x4_l], %[x4_l], %[tmp1], ror #3\n\t"    // Update x4_l (#3)
+
+      /* --- Loop control --- */
+      "cmp    %[C], %[E]\n\t"         // Compare constant pointer with end address
+      "bne    rbegin_%=\n\t"          // If not finished, loop back
+      :
+      [x0_l] "+r"(s->w[0][0]), [x0_h] "+r"(s->w[0][1]),
+      [x1_l] "+r"(s->w[1][0]), [x1_h] "+r"(s->w[1][1]),
+      [x2_l] "+r"(s->w[2][0]), [x2_h] "+r"(s->w[2][1]),
+      [x3_l] "+r"(s->w[3][0]), [x3_h] "+r"(s->w[3][1]),
+      [x4_l] "+r"(s->w[4][0]), [x4_h] "+r"(s->w[4][1]),
+      [C] "+r"(C), [E] "+r"(E),
+      [tmp0] "=r"(tmp0), [tmp1] "=r"(tmp1)
+      :
+      : "cc");
+}
+```
+
+---
+
+### Additional Considerations
+
+- **Interleaving:**  
+  By mixing low‑half and high‑half operations, we provide independent instruction streams that the STM32 core can schedule concurrently. In our updated code, after the initial mixing of x0 and x4, we immediately start processing parts of both halves before finishing one entirely.
+
+- **Full Unrolling:**  
+  If you know that the number of rounds is fixed (for example, 12 rounds), consider writing separate unrolled routines for each round. This removes the branch overhead from the loop and allows the scheduler to optimize across all rounds.
+
+- **DSP Extensions:**  
+  On STM32 parts with DSP instructions, you might experiment with replacing some of the bit-manipulation sequences with DSP intrinsics or dedicated assembly instructions to further reduce cycle counts.
+
+- **Memory Placement:**  
+  Placing the round constant array in tightly coupled memory (TCM) or ensuring it’s properly aligned with compiler attributes can also provide minor gains.
+
+Taking these ideas further might involve profiling on your specific STM32 variant to see which modifications give the best trade-off between speed, code size, and maintainability.
+
+Each change should be validated both for performance (using cycle-accurate profiling) and for constant-time properties, which are crucial for cryptographic code.
