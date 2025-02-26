@@ -12,8 +12,6 @@ exp 2: time: 09:56 seconds. (9.28% faster than [4])
 
 exp 3: time: 09:44 seconds. (11.11% faster than [4])
 
-notes: i just manipulated with inline asm code. thats it.
-
 ## configurations
 
 calling `ROUND_LOOP`.
