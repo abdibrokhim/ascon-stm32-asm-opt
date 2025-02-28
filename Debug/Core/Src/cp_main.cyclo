@@ -1,0 +1,5 @@
+../Core/Src/cp_main.c:39:6:print	3
+../Core/Src/cp_main.c:46:5:ascon_main	2
+../Core/Src/cp_main.c:216:6:SystemClock_Config	3
+../Core/Src/cp_main.c:164:5:main	4
+../Core/Src/cp_main.c:331:6:Error_Handler	1

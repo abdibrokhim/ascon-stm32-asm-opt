@@ -21,6 +21,10 @@
         "stm32f1xx_hal_rcc.h": "c",
         "forceinline.h": "c",
         "word.h": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "gost.h": "c",
+        "__config": "cpp",
+        "stdbool.h": "c",
+        "crypto_gost.h": "c"
     }
 }

@@ -1,28 +1,12 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
+// ASCON headers begin //
 #include "api.h"
 #if defined(AVR_UART)
 #include "avr_uart.h"
@@ -35,7 +19,13 @@
 #include "crypto_auth.h"
 #endif
 #include <stm32f103xb.h>
+// ASCON headers end //
 
+// GOST header begin //
+#include "gost.h"
+// GOST header end //
+
+// Private function prototypes
 void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
   unsigned long long i;
   printf("%c[%d]=", c, (int)xlen);
@@ -43,6 +33,7 @@ void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
   printf("\n");
 }
 
+// ASCON test function
 int ascon_main() {
   /* Sample data (key, nonce, associated data, plaintext) */
   unsigned char n[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
@@ -69,14 +60,6 @@ int ascon_main() {
   stdin = &avr_uart_input_echo;
 #endif
 
-//#if defined(CRYPTO_AEAD)
-  /* Print the input parameters */
-  //printf("input:\n");
-  //print('k', k, CRYPTO_KEYBYTES);
-  //print('n', n, CRYPTO_NPUBBYTES);
-  //print('a', a, alen);
-  //print('m', m, mlen);
-
   uint32_t total_time = 0;
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
     HAL_Delay(5000);                                          // Wait 5 seconds
@@ -86,27 +69,10 @@ int ascon_main() {
 
       result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, NULL, n, k);
 
-      //printf("Encryption %d took %lu ms\n", i + 1, elapsed);
   }
   uint32_t end_time = HAL_GetTick();
         uint32_t elapsed = end_time - start_time;
         total_time += elapsed;
-  //printf("Average encryption time: %lu ms\n", total_time / 10);
-
-  /* Print the resulting ciphertext and tag */
-  //printf("encrypt:\n");
-  //print('c', c, clen - CRYPTO_ABYTES);
-  //print('t', c + clen - CRYPTO_ABYTES, CRYPTO_ABYTES);
-
-  /* Decrypt and print the result to verify correctness */
-  //result |= crypto_aead_decrypt(m, &mlen, NULL, c, clen, a, alen, n, k);
-  //printf("decrypt:\n");
-  //print('m', m, mlen);
-//#elif defined(CRYPTO_HASH)
-  // Similar modifications for the hash variant (if needed)
-//#elif defined(CRYPTO_AUTH)
-  // Similar modifications for the authentication variant (if needed)
-//#endif
 
   /* Turn ON LED on PC13, wait 5 seconds, then turn OFF LED */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
@@ -114,6 +80,64 @@ int ascon_main() {
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
 
   return result;
+}
+
+
+
+/* GOST test function */
+int gost_main() {
+    // Define the 256-bit key (32 bytes)
+    uint8_t key[32] = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+        0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+    };
+
+    // Define a sample S-box (128 bytes, 8 rows of 16 nibbles)
+    // Note: Replace with the actual GOST S-box for correct operation
+    uint8_t sbox[128] = {
+    0x04, 0x02, 0x0F, 0x05, 0x09, 0x01, 0x00, 0x08, 0x0E, 0x03, 0x0B, 0x0C, 0x0D, 0x07, 0x0A, 0x06,
+    0x0C, 0x09, 0x0F, 0x0E, 0x08, 0x01, 0x03, 0x0A, 0x02, 0x07, 0x04, 0x0D, 0x06, 0x00, 0x0B, 0x05,
+    0x0D, 0x08, 0x0E, 0x0C, 0x07, 0x03, 0x09, 0x0A, 0x01, 0x05, 0x02, 0x04, 0x06, 0x0F, 0x00, 0x0B,
+    0x0E, 0x09, 0x0B, 0x02, 0x05, 0x0F, 0x07, 0x01, 0x00, 0x0D, 0x0C, 0x06, 0x0A, 0x04, 0x03, 0x08,
+    0x03, 0x0E, 0x05, 0x09, 0x06, 0x08, 0x00, 0x0D, 0x0A, 0x0B, 0x07, 0x0C, 0x02, 0x01, 0x0F, 0x04,
+    0x08, 0x0F, 0x06, 0x0B, 0x01, 0x09, 0x0C, 0x05, 0x0D, 0x03, 0x07, 0x0A, 0x00, 0x0E, 0x02, 0x04,
+    0x09, 0x0B, 0x0C, 0x00, 0x03, 0x06, 0x07, 0x05, 0x04, 0x08, 0x0E, 0x0F, 0x01, 0x0A, 0x02, 0x0D,
+    0x0C, 0x06, 0x05, 0x02, 0x0B, 0x00, 0x09, 0x0D, 0x03, 0x0E, 0x07, 0x0A, 0x0F, 0x04, 0x01, 0x08
+    };
+
+    // Define plaintext (64-bit block, 8 bytes)
+    uint8_t plaintext[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    // uint8_t ciphertext[8];
+    // uint8_t decrypted[8];
+    int result = 0;
+
+    // Encrypt the plaintext
+    // GOST_Encrypt_SR(plaintext, 8, _GOST_Mode_Encrypt, sbox, key);
+    // memcpy(ciphertext, plaintext, 8); // plaintext now contains ciphertext
+
+    // Measure performance: Encrypt multiple times
+    uint32_t total_time = 0;
+    uint32_t iterations = 20000;
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(5000);                          // Wait 5 seconds
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+
+    uint32_t start_time = HAL_GetTick();
+    for (uint32_t i = 0; i < iterations; i++) {
+        GOST_Encrypt_SR(plaintext, 8, sbox, key);
+    }
+    uint32_t end_time = HAL_GetTick();
+    uint32_t elapsed = end_time - start_time;
+    total_time += elapsed;
+
+    // Indicate test result via LED
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(5000);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+
+    return result;
 }
 
 
@@ -191,8 +215,13 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  /* ASCON */
+  /* ASCON CODE BEGIN */
   ascon_main();
+  /* ASCON CODE END */
+
+  /* GOST CODE BEGIN */
+  // gost_main();
+  /* GOST CODE END */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

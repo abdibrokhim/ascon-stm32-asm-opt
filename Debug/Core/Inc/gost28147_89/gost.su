@@ -1,0 +1,10 @@
+../Core/Inc/gost28147_89/gost.cpp:85:6:void GOST_Crypt_Step(GOST_Data_Part*, uint8_t*, uint32_t, bool)	48	static,ignoring_inline_asm
+../Core/Inc/gost28147_89/gost.cpp:174:6:void GOST_Crypt_32_E_Cicle(GOST_Data_Part*, uint8_t*, uint32_t*)	32	static
+../Core/Inc/gost28147_89/gost.cpp:212:6:void GOST_Crypt_32_D_Cicle(GOST_Data_Part*, uint8_t*, uint32_t*)	32	static
+../Core/Inc/gost28147_89/gost.cpp:252:6:void GOST_Imitta_16_E_Cicle(GOST_Data_Part*, uint8_t*, uint32_t*)	32	static
+../Core/Inc/gost28147_89/gost.cpp:284:6:void GOST_Imitta(uint8_t*, uint8_t*, uint32_t, uint8_t*, uint8_t*)	40	static
+../Core/Inc/gost28147_89/gost.cpp:353:6:void GOST_Encrypt_SR(uint8_t*, uint32_t, uint8_t*, uint8_t*)	40	static,ignoring_inline_asm
+../Core/Inc/gost28147_89/gost.cpp:400:6:void GOST_Crypt_G_PS(uint8_t*, uint8_t*, uint8_t*)	32	static
+../Core/Inc/gost28147_89/gost.cpp:422:6:void GOST_Crypt_G_Data(uint8_t*, uint32_t, uint8_t*, uint8_t*, uint8_t*)	40	static
+../Core/Inc/gost28147_89/gost.cpp:459:6:void GOST_Crypt_GF_Prepare_S(uint8_t*)	24	static
+../Core/Inc/gost28147_89/gost.cpp:483:6:void GOST_Crypt_GF_Data(uint8_t*, uint32_t, uint8_t*, bool, uint8_t*, uint8_t*)	40	static
