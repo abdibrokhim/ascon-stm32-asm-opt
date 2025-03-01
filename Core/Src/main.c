@@ -216,11 +216,11 @@ int main(void)
   /* USER CODE END 2 */
 
   /* ASCON CODE BEGIN */
-  ascon_main();
+  // ascon_main();
   /* ASCON CODE END */
 
   /* GOST CODE BEGIN */
-  // gost_main();
+  gost_main();
   /* GOST CODE END */
 
   /* Infinite loop */
