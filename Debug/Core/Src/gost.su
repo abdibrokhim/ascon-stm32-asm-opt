@@ -3,8 +3,11 @@
 ../Core/Src/gost.c:162:6:GOST_Crypt_32_D_Cicle	28	static
 ../Core/Src/gost.c:217:6:GOST_Imitta_16_E_Cicle	28	static
 ../Core/Src/gost.c:256:6:GOST_Imitta	56	static
-../Core/Src/gost.c:309:6:GOST_Encrypt_SR	56	static
-../Core/Src/gost.c:375:6:GOST_Crypt_G_PS	4	static
-../Core/Src/gost.c:397:6:GOST_Crypt_G_Data	48	static
-../Core/Src/gost.c:461:6:GOST_Crypt_GF_Prepare_S	0	static
-../Core/Src/gost.c:485:6:GOST_Crypt_GF_Data	48	static
+../Core/Src/gost.c:310:10:GOST_Crypt_Step_Opt	4	static
+../Core/Src/gost.c:335:6:GOST_Crypt_32_E_Cicle_Opt	16	static
+../Core/Src/gost.c:481:6:GOST_Crypt_32_D_Cicle_Opt	16	static
+../Core/Src/gost.c:629:5:GOST_Encrypt_SR_Opt	96	static
+../Core/Src/gost.c:702:6:GOST_Crypt_G_PS	4	static
+../Core/Src/gost.c:724:6:GOST_Crypt_G_Data	48	static
+../Core/Src/gost.c:788:6:GOST_Crypt_GF_Prepare_S	0	static
+../Core/Src/gost.c:812:6:GOST_Crypt_GF_Data	48	static

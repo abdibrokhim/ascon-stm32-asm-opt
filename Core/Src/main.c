@@ -107,12 +107,16 @@ int gost_main() {
     0x0C, 0x06, 0x05, 0x02, 0x0B, 0x00, 0x09, 0x0D, 0x03, 0x0E, 0x07, 0x0A, 0x0F, 0x04, 0x01, 0x08
     };
 
-    uint8_t sbox2[4*256];
+    // Create optimized substitution table
+    GOST_Subst_Table subst_table;
     for(int i = 0; i < 4; i++){
-      for(int j = 0; j < 16; j++)
-      for(int k = 0; k < 16; k++){
-        sbox2[i*256+j*16+k] = sbox[i*32+j+16]*16 + sbox[i*32+k];
-      }
+        for(int j = 0; j < 16; j++)
+        for(int k = 0; k < 16; k++){
+            // Calculate linear index into the table
+            int idx = i * 256 + j * 16 + k;
+            // Calculate substitution value from original S-box
+            subst_table[idx] = sbox[i*32 + j + 16]*16 + sbox[i*32 + k];
+        }
     }
 
     // Define plaintext (64-bit block, 8 bytes)
@@ -122,19 +126,20 @@ int gost_main() {
     // Measure performance: Encrypt multiple times
     uint32_t iterations = 20000;
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
-    HAL_Delay(3000);                          // Wait 3 seconds
+    HAL_Delay(5000);                          // Wait 5 seconds
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
 
     // uint32_t start_time = HAL_GetTick();
     for (uint32_t i = 0; i < iterations; i++) {
-        GOST_Encrypt_SR(plaintext, 8, _GOST_Mode_Encrypt, sbox2, key);
+        // Use the optimized encryption function with precomputed tables
+        GOST_Encrypt_SR_Opt(plaintext, 8, _GOST_Mode_Encrypt, subst_table, key);
     }
     // uint32_t end_time = HAL_GetTick();
     // uint32_t elapsed = end_time - start_time;
     
     // Indicate test result via LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
-    HAL_Delay(3000);
+    HAL_Delay(5000); // Wait 5 seconds
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
 
     return result;

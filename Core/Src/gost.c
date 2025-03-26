@@ -297,66 +297,393 @@ void GOST_Imitta(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, uint8_t *GO
 }
 
 /**
-@details GOST_Encrypt_SR
-Функция шифрования/расшифрования в режиме простой замены.
+@details GOST_Crypt_Step_Opt
+Выполняет простейший шаг криптопреобразования(шифрования и расшифрования) ГОСТ28147-89
+используя предвычисленные таблицы подстановки для оптимизации производительности
+@param *DATA - Указатель на данные для зашифрования в формате GOST_Data_Part
+@param *subst_table - Указатель на оптимизированную таблицу подстановки
+@param GOST_Key - 32хбитная часть ключа(СК).
+@param Last - Является ли шаг криптопреобразования последним? Если да(true)-
+результат будет занесен в 32х битный накопитель N2, в противном случае предыдущие значение N1
+сохраняется в N2, а результат работы будет занесен в накопитель N1.
+*/
+uint32_t GOST_Crypt_Step_Opt(uint32_t data, GOST_Subst_Table Table, uint32_t key, int last_step)
+{
+    // XOR the right half with the key
+    uint32_t result = (data + key) & 0xffffffff;
+    
+    // Apply substitution using precomputed table
+    result = Table[(result & 0xff)] | 
+             (Table[256 + ((result >> 8) & 0xff)] << 8) |
+             (Table[512 + ((result >> 16) & 0xff)] << 16) |
+             (Table[768 + ((result >> 24) & 0xff)] << 24);
+    
+    // 11-bit left shift
+    result = ((result << 11) | (result >> 21)) & 0xffffffff;
+    
+    return result;
+} // took 02:29 secs
+
+/**
+@details GOST_Crypt_32_E_Cicle_Opt
+Оптимизированный базовый алгоритм выполняющий 32шага шифрования для 64-битной порции данных
+с использованием предвычисленных таблиц подстановки
+@param *DATA - Указатель на данные для зашифрования в формате GOST_Data_Part
+@param *subst_table - Указатель на оптимизированную таблицу подстановки
+@param GOST_Key - 32хбитная часть ключа(СК).
+*/
+void GOST_Crypt_32_E_Cicle_Opt(uint32_t *n1, uint32_t *n2, GOST_Subst_Table Table, uint32_t *GOST_Key)
+{
+    // Unroll the first 24 rounds for better performance
+    uint32_t tmp;
+    
+    // Round 1-8 (K0-K7)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    // Round 9-16 (K0-K7)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    // Round 17-24 (K0-K7)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    // Last 8 rounds (K7-K0)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 1);
+    *n2 = tmp;
+}
+
+/**
+@details GOST_Crypt_32_D_Cicle_Opt
+Оптимизированный базовый алгоритм выполняющий 32шага расшифрования для 64-битной порции данных
+с использованием предвычисленных таблиц подстановки
+@param *DATA - Указатель на данные для зашифрования в формате GOST_Data_Part
+@param *subst_table - Указатель на оптимизированную таблицу подстановки
+@param GOST_Key - 32хбитная часть ключа(СК).
+*/
+void GOST_Crypt_32_D_Cicle_Opt(uint32_t *n1, uint32_t *n2, GOST_Subst_Table Table, uint32_t *GOST_Key)
+{
+    // Unroll the 32 rounds for better performance
+    uint32_t tmp;
+    
+    // First 8 rounds (K0-K7)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    // Remaining 24 rounds (K7-K0 repeated three times)
+    // Round 9-16 (K7-K0)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    // Round 17-24 (K7-K0)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+
+    // Round 25-32 (K7-K0)
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[7], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[6], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[5], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[4], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[3], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[2], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[1], 0);
+    *n2 = tmp;
+
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 1);
+    *n2 = tmp;
+}
+
+/**
+@details GOST_Encrypt_SR_Opt
+Оптимизированная функция шифрования/расшифрования в режиме простой замены.
 @param *Data - Указатель на данные для шифрования, также сюда заносится результат.
 @param Size - Размер данных
 @param Mode - Если _GOST_Mode_Encrypt шифрования, _GOST_Mode_Decrypt - расшифрование
-@param *GOST_Table - Указатель на таблицу замены ГОСТ(ДК) в 128 байтном формате
-(вместо старшого полубайта 0)
+@param *subst_table - Указатель на оптимизированную таблицу подстановки
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 */
-void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key ) {
-    GOST_Data_Part Data_prep;
-    uint32_t *GOST_Key_pt = (uint32_t *) GOST_Key;
-
-    while (Size >= _GOST_Part_Size) {
-        // Process full blocks directly without memcpy/memset
-        Data_prep = *((GOST_Data_Part *)Data);
-        
-#if _GOST_ROT==1
-        // Use the optimized byte-swap macro
-        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
-#endif
-        if (Mode == _GOST_Mode_Encrypt) {
-            GOST_Crypt_32_E_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
-        } else {
-            GOST_Crypt_32_D_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
-        }
-#if _GOST_ROT==1
-        // Use the optimized byte-swap macro
-        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
-#endif
-        // Copy result directly back to Data
-        *((GOST_Data_Part *)Data) = Data_prep;
-        
-        Data += _GOST_Part_Size;
-        Size -= _GOST_Part_Size;
+int GOST_Encrypt_SR_Opt(uint8_t *Data, uint32_t Size, uint8_t Mode, GOST_Subst_Table Table, uint8_t *GOST_Key_start)
+{
+    uint32_t GOST_Key[8];
+    GOST_Data_Part Temp;
+    uint32_t n;
+    
+    // Prepare the key in the correct byte order
+    for (int i = 0; i < 8; i++) {
+        GOST_Key[i] = _GOST_SWAP32(((uint32_t *)GOST_Key_start)[i]);
     }
     
-    // Handle remaining partial block if any
-    if (Size > 0) {
-        memset(&Data_prep, _GOST_Def_Byte, sizeof(Data_prep));
-        memcpy(&Data_prep, Data, Size);
-#if _GOST_ROT==1
-        // Use the optimized byte-swap macro
-        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
-#endif
+    // Process full blocks
+    for (n = 0; n < Size / 8; n++) {
+        // Load data directly from the data pointer into GOST_Data_Part structure
+        Temp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(((uint32_t *)(Data + n * 8))[0]);
+        Temp.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(((uint32_t *)(Data + n * 8))[1]);
+        
+        // Encrypt or decrypt the data based on the Mode parameter
         if (Mode == _GOST_Mode_Encrypt) {
-            GOST_Crypt_32_E_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
-        } else {
-            GOST_Crypt_32_D_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
+            GOST_Crypt_32_E_Cicle_Opt(&Temp.half[_GOST_Data_Part_N1_Half], &Temp.half[_GOST_Data_Part_N2_Half], Table, GOST_Key);
+        } else if (Mode == _GOST_Mode_Decrypt) {
+            GOST_Crypt_32_D_Cicle_Opt(&Temp.half[_GOST_Data_Part_N1_Half], &Temp.half[_GOST_Data_Part_N2_Half], Table, GOST_Key);
         }
-#if _GOST_ROT==1
-        // Use the optimized byte-swap macro
-        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
-#endif
-        memcpy(Data, &Data_prep, Size);
+        
+        // Write the result back to the data pointer
+        ((uint32_t *)(Data + n * 8))[0] = _GOST_SWAP32(Temp.half[_GOST_Data_Part_N1_Half]);
+        ((uint32_t *)(Data + n * 8))[1] = _GOST_SWAP32(Temp.half[_GOST_Data_Part_N2_Half]);
     }
+    
+    // Handle any remaining partial block (less than 8 bytes)
+    uint32_t remain = Size % 8;
+    if (remain > 0) {
+        uint8_t block[8] = {0};
+        // Copy the remaining bytes to a temp buffer
+        for (uint32_t i = 0; i < remain; i++) {
+            block[i] = Data[n * 8 + i];
+        }
+        
+        // Process the final partial block
+        Temp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(((uint32_t *)block)[0]);
+        Temp.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(((uint32_t *)block)[1]);
+        
+        if (Mode == _GOST_Mode_Encrypt) {
+            GOST_Crypt_32_E_Cicle_Opt(&Temp.half[_GOST_Data_Part_N1_Half], &Temp.half[_GOST_Data_Part_N2_Half], Table, GOST_Key);
+        } else if (Mode == _GOST_Mode_Decrypt) {
+            GOST_Crypt_32_D_Cicle_Opt(&Temp.half[_GOST_Data_Part_N1_Half], &Temp.half[_GOST_Data_Part_N2_Half], Table, GOST_Key);
+        }
+        
+        ((uint32_t *)block)[0] = _GOST_SWAP32(Temp.half[_GOST_Data_Part_N1_Half]);
+        ((uint32_t *)block)[1] = _GOST_SWAP32(Temp.half[_GOST_Data_Part_N2_Half]);
+        
+        // Copy the encrypted/decrypted data back to the original buffer
+        for (uint32_t i = 0; i < remain; i++) {
+            Data[n * 8 + i] = block[i];
+        }
+    }
+    
+    return 0;
 }
 
 #if _GOST_ROT_Synchro_GAMMA==1
