@@ -34,6 +34,13 @@
 #define _GOST_ADC32(x,y,c) c=(uint32_t)(x+y); c+=( ( c<x ) | ( c<y ) )
 
 /**
+    @def _GOST_SWAP32(x)
+    Optimized byte-swap macro that reverses byte order in a 32-bit value.
+    Faster alternative to __builtin_bswap32 for some platforms.
+*/
+#define _GOST_SWAP32(x) ((x>>24) | (x<<24) | ((x>>8)&0xFF00) | ((x<<8)&0xFF0000))
+
+/**
 @details GOST_Crypt_Step
 Выполняет простейший шаг криптопреобразования(шифрования и расшифрования) ГОСТ28147-89
 @param *DATA - Указатель на данные для зашифрования в формате GOST_Data_Part
@@ -99,29 +106,46 @@ void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Ke
 */
 void GOST_Crypt_32_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *GOST_Key)
 {
-    uint8_t k,j;
-    uint32_t *GOST_Key_tmp=GOST_Key;
-//Key rotation:
-//K0,K1,K2,K3,K4,K5,K6,K7, K0,K1,K2,K3,K4,K5,K6,K7, K0,K1,K2,K3,K4,K5,K6,K7, K7,K6,K5,K4,K3,K2,K1,K0
-
-    for(k=0;k<3;k++)
-    {
-        for (j=0;j<8;j++)
-        {
-            GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Next_Step ) ;
-            GOST_Key++;
-        }
-        GOST_Key=GOST_Key_tmp;
-    }
-
-    GOST_Key+=7;//K7
-
-    for (j=0;j<7;j++)
-    {
-        GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Next_Step ) ;
-        GOST_Key--;
-    }
-    GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Last_Step ) ;
+    // First 24 rounds with keys K0-K7 repeated 3 times
+    // Unroll first 8 rounds
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    
+    // Second set of 8 rounds
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    
+    // Third set of 8 rounds
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    
+    // Last 8 rounds with reversed key order (K7-K0)
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Last_Step);
 }
 
 /**
@@ -137,32 +161,47 @@ void GOST_Crypt_32_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *
 //Basic 32-P decryption algorithm of GOST, usefull only in SR mode
 void GOST_Crypt_32_D_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *GOST_Key)
 {
-    uint8_t k,j;
-//Key rotation:
-//K0,K1,K2,K3,K4,K5,K6,K7, K7,K6,K5,K4,K3,K2,K1,K0, K7,K6,K5,K4,K3,K2,K1,K0, K7,K6,K5,K4,K3,K2,K1,K0
-    for (j=0;j<8;j++)
-    {
-        GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Next_Step ) ;
-        GOST_Key++;
-    }
-//GOST_Key offset =  GOST_Key + _GOST_32_3P_CICLE_ITERS_J
-    for(k=0;k<2;k++)
-    {
-        for (j=0;j<8;j++)
-        {
-            GOST_Key--;
-            GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Next_Step ) ;
-        }
-        GOST_Key+=8;
-    }
-    for (j=0;j<7;j++)
-    {
-        GOST_Key--;
-        GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Next_Step ) ;
-    }
-    GOST_Key--;
-    GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key,_GOST_Last_Step ) ;
-
+    // Unroll all the loops for better performance
+    // First 8 rounds with keys K0-K7
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    
+    // Reverse key order for remaining 24 rounds
+    // First set of reverse key order
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    
+    // Second set of reverse key order
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    
+    // Third set of reverse key order (last 8 steps)
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Last_Step);
 }
 
 /**
@@ -177,21 +216,28 @@ void GOST_Crypt_32_D_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *
 //Imitta
 void GOST_Imitta_16_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *GOST_Key)
 {
-//Key rotation:
-//K0,K1,K2,K3,K4,K5,K6,K7, K0,K1,K2,K3,K4,K5,K6,K7.
-    uint8_t k,j;
-    uint32_t *GOST_Key_Beg=GOST_Key;
-    for(k=0;k<2;k++)
-    {
-        for (j=0;j<8;j++)
-        {
-            GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key, _GOST_Next_Step) ;
-            GOST_Key++;
-        }
-        GOST_Key=GOST_Key_Beg;
-    }
-
-
+    // Key rotation: K0,K1,K2,K3,K4,K5,K6,K7, K0,K1,K2,K3,K4,K5,K6,K7
+    // Unroll both loops for better performance
+    
+    // First 8 rounds with keys K0-K7
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
+    
+    // Second 8 rounds with same keys K0-K7
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[0], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[1], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[2], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[3], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[4], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[5], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[6], _GOST_Next_Step);
+    GOST_Crypt_Step(DATA, GOST_Table, GOST_Key[7], _GOST_Next_Step);
 }
 
 /**
@@ -207,27 +253,46 @@ void GOST_Imitta_16_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t 
 @attention  Для первого раунда массив Imitta должен быть заполнен _GOST_Def_Byte!
 */
 //for first round Imitta must set to _GOST_Def_Byte
-void GOST_Imitta(uint8_t *Open_Data,  uint8_t *Imitta, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key )
+void GOST_Imitta(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key)
 {
-
-    uint8_t Cur_Part_Size;
-    GOST_Data_Part *Imitta_Prep=(GOST_Data_Part *) Imitta;
+    GOST_Data_Part *Imitta_Prep = (GOST_Data_Part *)Imitta;
     GOST_Data_Part Open_Data_Prep;
-    while(Size!=0)
-    {
-        Cur_Part_Size=_Min(_GOST_Part_Size,Size);
-        Open_Data_Prep.half[_GOST_Data_Part_N2_Half]=0;
-        Open_Data_Prep.half[_GOST_Data_Part_N1_Half]=0;
-        memcpy(&Open_Data_Prep,Open_Data,Cur_Part_Size);
-        (*Imitta_Prep).half[_GOST_Data_Part_N1_Half]^=Open_Data_Prep.half[_GOST_Data_Part_N1_Half];
-        (*Imitta_Prep).half[_GOST_Data_Part_N2_Half]^=Open_Data_Prep.half[_GOST_Data_Part_N2_Half];
-        Size-=Cur_Part_Size;
-        Open_Data+=Cur_Part_Size;
-        GOST_Imitta_16_E_Cicle(Imitta_Prep,GOST_Table,(uint32_t *)GOST_Key);
+    uint32_t *GOST_Key_ptr = (uint32_t *)GOST_Key;
+    
+    // Process full blocks directly
+    while (Size >= _GOST_Part_Size) {
+        // Load data directly without memcpy
+        Open_Data_Prep = *((GOST_Data_Part *)Open_Data);
+        
+        // XOR with imitation accumulator
+        (*Imitta_Prep).half[_GOST_Data_Part_N1_Half] ^= Open_Data_Prep.half[_GOST_Data_Part_N1_Half];
+        (*Imitta_Prep).half[_GOST_Data_Part_N2_Half] ^= Open_Data_Prep.half[_GOST_Data_Part_N2_Half];
+        
+        // Run 16 encryption rounds
+        GOST_Imitta_16_E_Cicle(Imitta_Prep, GOST_Table, GOST_Key_ptr);
+        
+        Size -= _GOST_Part_Size;
+        Open_Data += _GOST_Part_Size;
     }
+    
+    // Handle remaining partial block if any
+    if (Size > 0) {
+        // Clear the prep buffer and copy partial data
+        Open_Data_Prep.half[_GOST_Data_Part_N2_Half] = 0;
+        Open_Data_Prep.half[_GOST_Data_Part_N1_Half] = 0;
+        memcpy(&Open_Data_Prep, Open_Data, Size);
+        
+        // XOR with imitation accumulator
+        (*Imitta_Prep).half[_GOST_Data_Part_N1_Half] ^= Open_Data_Prep.half[_GOST_Data_Part_N1_Half];
+        (*Imitta_Prep).half[_GOST_Data_Part_N2_Half] ^= Open_Data_Prep.half[_GOST_Data_Part_N2_Half];
+        
+        // Run 16 encryption rounds
+        GOST_Imitta_16_E_Cicle(Imitta_Prep, GOST_Table, GOST_Key_ptr);
+    }
+    
 #if _GOST_ROT==1
-    (*Imitta_Prep).half[_GOST_Data_Part_N1_Half] = __builtin_bswap32((*Imitta_Prep).half[_GOST_Data_Part_N1_Half]);
-    (*Imitta_Prep).half[_GOST_Data_Part_N2_Half] = __builtin_bswap32((*Imitta_Prep).half[_GOST_Data_Part_N2_Half]);
+    (*Imitta_Prep).half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32((*Imitta_Prep).half[_GOST_Data_Part_N1_Half]);
+    (*Imitta_Prep).half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32((*Imitta_Prep).half[_GOST_Data_Part_N2_Half]);
 #endif
 }
 
@@ -242,30 +307,55 @@ void GOST_Imitta(uint8_t *Open_Data,  uint8_t *Imitta, uint32_t Size, uint8_t *G
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 */
 void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key ) {
-    uint8_t Cur_Part_Size;
     GOST_Data_Part Data_prep;
-    uint32_t *GOST_Key_pt=(uint32_t *) GOST_Key;
+    uint32_t *GOST_Key_pt = (uint32_t *) GOST_Key;
 
-    while (Size!=0) {
-        Cur_Part_Size=_Min(_GOST_Part_Size,Size);
-        memset(&Data_prep,_GOST_Def_Byte,sizeof(Data_prep));
-        memcpy(&Data_prep,Data,Cur_Part_Size);
+    while (Size >= _GOST_Part_Size) {
+        // Process full blocks directly without memcpy/memset
+        Data_prep = *((GOST_Data_Part *)Data);
+        
 #if _GOST_ROT==1
-        Data_prep.half[_GOST_Data_Part_N2_Half] = __builtin_bswap32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = __builtin_bswap32(Data_prep.half[_GOST_Data_Part_N1_Half]);
+        // Use the optimized byte-swap macro
+        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
+        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
 #endif
-        if (Mode==_GOST_Mode_Encrypt) {
-            GOST_Crypt_32_E_Cicle(&Data_prep,GOST_Table,GOST_Key_pt);
+        if (Mode == _GOST_Mode_Encrypt) {
+            GOST_Crypt_32_E_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
         } else {
-            GOST_Crypt_32_D_Cicle(&Data_prep,GOST_Table,GOST_Key_pt);
+            GOST_Crypt_32_D_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
         }
 #if _GOST_ROT==1
-        Data_prep.half[_GOST_Data_Part_N2_Half] = __builtin_bswap32(Data_prep.half[_GOST_Data_Part_N2_Half]);
-        Data_prep.half[_GOST_Data_Part_N1_Half] = __builtin_bswap32(Data_prep.half[_GOST_Data_Part_N1_Half]);
+        // Use the optimized byte-swap macro
+        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
+        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
 #endif
-        memcpy(Data,&Data_prep, Cur_Part_Size);
-        Data+=Cur_Part_Size;
-        Size-=Cur_Part_Size;
+        // Copy result directly back to Data
+        *((GOST_Data_Part *)Data) = Data_prep;
+        
+        Data += _GOST_Part_Size;
+        Size -= _GOST_Part_Size;
+    }
+    
+    // Handle remaining partial block if any
+    if (Size > 0) {
+        memset(&Data_prep, _GOST_Def_Byte, sizeof(Data_prep));
+        memcpy(&Data_prep, Data, Size);
+#if _GOST_ROT==1
+        // Use the optimized byte-swap macro
+        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
+        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
+#endif
+        if (Mode == _GOST_Mode_Encrypt) {
+            GOST_Crypt_32_E_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
+        } else {
+            GOST_Crypt_32_D_Cicle(&Data_prep, GOST_Table, GOST_Key_pt);
+        }
+#if _GOST_ROT==1
+        // Use the optimized byte-swap macro
+        Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
+        Data_prep.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N1_Half]);
+#endif
+        memcpy(Data, &Data_prep, Size);
     }
 }
 
@@ -304,28 +394,56 @@ void GOST_Crypt_G_PS(uint8_t *Synchro, uint8_t *GOST_Table, uint8_t *GOST_Key)
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 @attention Синхропосылка Synchro для первого вызова должна быть подготовлена функцией/макросом GOST_Crypt_G_PS.
 */
-void GOST_Crypt_G_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, uint8_t *GOST_Table, uint8_t *GOST_Key )
+void GOST_Crypt_G_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, uint8_t *GOST_Table, uint8_t *GOST_Key)
 {
-    GOST_Data_Part *S=(GOST_Data_Part *)Synchro;
+    GOST_Data_Part *S = (GOST_Data_Part *)Synchro;
     GOST_Data_Part Tmp;
-    uint8_t i;
-    while(Size!=0)
-    {
-        (*S).half[_GOST_Data_Part_N1_Half]+=_GOST_C0;
-        _GOST_ADC32((*S).half[_GOST_Data_Part_N2_Half],_GOST_C1,(*S).half[_GOST_Data_Part_N2_Half]);//_GOST_Data_Part_HiHalf
-
-        Tmp=*S;
-        GOST_Crypt_32_E_Cicle(&Tmp,GOST_Table,(uint32_t *)GOST_Key);
+    uint32_t *GOST_Key_ptr = (uint32_t *)GOST_Key;
+    
+    // Process full blocks (8 bytes at a time) when possible
+    while (Size >= _GOST_Part_Size) {
+        // Update synchro counter
+        (*S).half[_GOST_Data_Part_N1_Half] += _GOST_C0;
+        _GOST_ADC32((*S).half[_GOST_Data_Part_N2_Half], _GOST_C1, (*S).half[_GOST_Data_Part_N2_Half]);
+        
+        // Create gamma block
+        Tmp = *S;
+        GOST_Crypt_32_E_Cicle(&Tmp, GOST_Table, GOST_Key_ptr);
+        
 #if _GOST_ROT==1
-        Tmp.half[_GOST_Data_Part_N2_Half] = __builtin_bswap32(Tmp.half[_GOST_Data_Part_N2_Half]);
-        Tmp.half[_GOST_Data_Part_N1_Half] = __builtin_bswap32(Tmp.half[_GOST_Data_Part_N1_Half]);
+        Tmp.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Tmp.half[_GOST_Data_Part_N2_Half]);
+        Tmp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Tmp.half[_GOST_Data_Part_N1_Half]);
 #endif
-        for (i=0;i<_Min(_GOST_Part_Size,Size);i++)
-        {
-            *Data^=Tmp.parts[i];
+        
+        // XOR full block directly
+        GOST_Data_Part *Data_ptr = (GOST_Data_Part *)Data;
+        Data_ptr->half[0] ^= Tmp.half[0];
+        Data_ptr->half[1] ^= Tmp.half[1];
+        
+        Data += _GOST_Part_Size;
+        Size -= _GOST_Part_Size;
+    }
+    
+    // Handle remaining partial block if any
+    if (Size > 0) {
+        // Update synchro counter
+        (*S).half[_GOST_Data_Part_N1_Half] += _GOST_C0;
+        _GOST_ADC32((*S).half[_GOST_Data_Part_N2_Half], _GOST_C1, (*S).half[_GOST_Data_Part_N2_Half]);
+        
+        // Create gamma block
+        Tmp = *S;
+        GOST_Crypt_32_E_Cicle(&Tmp, GOST_Table, GOST_Key_ptr);
+        
+#if _GOST_ROT==1
+        Tmp.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Tmp.half[_GOST_Data_Part_N2_Half]);
+        Tmp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(Tmp.half[_GOST_Data_Part_N1_Half]);
+#endif
+        
+        // XOR remaining bytes
+        for (uint8_t i = 0; i < Size; i++) {
+            *Data ^= Tmp.parts[i];
             Data++;
         }
-        Size-=i;
     }
 }
 
@@ -364,35 +482,84 @@ void GOST_Crypt_GF_Prepare_S(uint8_t *Synchro)
 @attention Если используется режим совместимости с входами еталонного шифратора, то синхропосылка
 Synchro для первого вызова должна быть подготовлена функцией GOST_Crypt_GF_Prepare_S.
 */
-void GOST_Crypt_GF_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key )
+void GOST_Crypt_GF_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key)
 {
-    GOST_Data_Part *S=(GOST_Data_Part *)Synchro;
-    uint8_t i,Tmp;
-    while(Size!=0)
-    {
-        GOST_Crypt_32_E_Cicle(S,GOST_Table,(uint32_t *)GOST_Key);//C32(S)
+    GOST_Data_Part *S = (GOST_Data_Part *)Synchro;
+    uint32_t *GOST_Key_ptr = (uint32_t *)GOST_Key;
+    
+    // Process full blocks (8 bytes at a time) when possible
+    while (Size >= _GOST_Part_Size) {
+        // Encrypt synchro
+        GOST_Crypt_32_E_Cicle(S, GOST_Table, GOST_Key_ptr);
+        
 #if _GOST_ROT==1
-        (*S).half[_GOST_Data_Part_N2_Half] = __builtin_bswap32((*S).half[_GOST_Data_Part_N2_Half]);
-        (*S).half[_GOST_Data_Part_N1_Half] = __builtin_bswap32((*S).half[_GOST_Data_Part_N1_Half]);
+        (*S).half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N2_Half]);
+        (*S).half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N1_Half]);
 #endif
-        for (i=0;i<_Min(_GOST_Part_Size,Size);i++)//Data XOR S; S=Data;
-        {
-            if (Mode==_GOST_Mode_Encrypt)
-            {
-                *Data^=(*S).parts[i];
-                (*S).parts[i]=*Data;
-            } else
-            {
-                Tmp=*Data;
-                *Data^=(*S).parts[i];
-                (*S).parts[i]=Tmp;
+        
+        if (Mode == _GOST_Mode_Encrypt) {
+            // Get full block at once
+            GOST_Data_Part *Data_ptr = (GOST_Data_Part *)Data;
+            GOST_Data_Part Data_tmp = *Data_ptr;
+            
+            // XOR and update
+            Data_tmp.half[0] ^= (*S).half[0];
+            Data_tmp.half[1] ^= (*S).half[1];
+            
+            // Write back and update synchro
+            *Data_ptr = Data_tmp;
+            *S = Data_tmp;
+        } else {
+            // Get full block at once
+            GOST_Data_Part *Data_ptr = (GOST_Data_Part *)Data;
+            GOST_Data_Part Data_tmp = *Data_ptr;
+            GOST_Data_Part S_tmp = *S;
+            
+            // Save for synchro before XOR
+            *S = Data_tmp;
+            
+            // XOR and update
+            Data_tmp.half[0] ^= S_tmp.half[0];
+            Data_tmp.half[1] ^= S_tmp.half[1];
+            
+            // Write back
+            *Data_ptr = Data_tmp;
+        }
+        
+#if _GOST_ROT==1
+        (*S).half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N2_Half]);
+        (*S).half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N1_Half]);
+#endif
+        
+        Data += _GOST_Part_Size;
+        Size -= _GOST_Part_Size;
+    }
+    
+    // Handle remaining partial block if any
+    if (Size > 0) {
+        // Encrypt synchro
+        GOST_Crypt_32_E_Cicle(S, GOST_Table, GOST_Key_ptr);
+        
+#if _GOST_ROT==1
+        (*S).half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N2_Half]);
+        (*S).half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N1_Half]);
+#endif
+        
+        for (uint8_t i = 0; i < Size; i++) {
+            if (Mode == _GOST_Mode_Encrypt) {
+                *Data ^= (*S).parts[i];
+                (*S).parts[i] = *Data;
+            } else {
+                uint8_t tmp = *Data;
+                *Data ^= (*S).parts[i];
+                (*S).parts[i] = tmp;
             }
             Data++;
         }
+        
 #if _GOST_ROT==1
-        (*S).half[_GOST_Data_Part_N2_Half] = __builtin_bswap32((*S).half[_GOST_Data_Part_N2_Half]);
-        (*S).half[_GOST_Data_Part_N1_Half] = __builtin_bswap32((*S).half[_GOST_Data_Part_N1_Half]);
+        (*S).half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N2_Half]);
+        (*S).half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32((*S).half[_GOST_Data_Part_N1_Half]);
 #endif
-        Size-=i;
     }
 }

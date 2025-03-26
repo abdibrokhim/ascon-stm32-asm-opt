@@ -117,29 +117,21 @@ int gost_main() {
 
     // Define plaintext (64-bit block, 8 bytes)
     uint8_t plaintext[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    // uint8_t ciphertext[8];
-    // uint8_t decrypted[8];
     int result = 0;
 
-    // Encrypt the plaintext
-    // GOST_Encrypt_SR(plaintext, 8, _GOST_Mode_Encrypt, sbox, key);
-    // memcpy(ciphertext, plaintext, 8); // plaintext now contains ciphertext
-
     // Measure performance: Encrypt multiple times
-    uint32_t total_time = 0;
     uint32_t iterations = 20000;
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
-    HAL_Delay(3000);                          // Wait 5 seconds
+    HAL_Delay(3000);                          // Wait 3 seconds
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
 
-    uint32_t start_time = HAL_GetTick();
+    // uint32_t start_time = HAL_GetTick();
     for (uint32_t i = 0; i < iterations; i++) {
         GOST_Encrypt_SR(plaintext, 8, _GOST_Mode_Encrypt, sbox2, key);
     }
-    uint32_t end_time = HAL_GetTick();
-    uint32_t elapsed = end_time - start_time;
-    total_time += elapsed;
-
+    // uint32_t end_time = HAL_GetTick();
+    // uint32_t elapsed = end_time - start_time;
+    
     // Indicate test result via LED
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
     HAL_Delay(3000);
