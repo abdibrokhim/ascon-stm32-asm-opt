@@ -13,11 +13,15 @@
 #ifndef GOST_H
 #define GOST_H
 #include "stdint.h"
+#include <stdbool.h>
+
 
 /**
   Тип для оптимизированной таблицы подстановки
 */
 typedef uint8_t GOST_Subst_Table[4*256];
+
+
 
 /**
   Количество узлов замены
@@ -61,18 +65,6 @@ typedef union
     uint32_t half[2];
    // uint64_t full; //Нет в с51
 } GOST_Data_Part;
-
-
-// typedef struct {
-//     uint32_t half[2];
-// } GOST_Data_Part;
-
-// #define _GOST_Data_Part_N1_Half 0
-// #define _GOST_Data_Part_N2_Half 1
-
-// #endif
-
-
 /**
   Размер порции данных для криптообработки
 */
@@ -126,20 +118,7 @@ typedef union
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 @attention  Для первого раунда массив Imitta должен быть заполнен _GOST_Def_Byte!
 */
-void GOST_Imitta(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key );
-
-/**
-@details GOST_Imitta_Opt
-Оптимизированная подпрограма расчета имитовставки с использованием предвычисленной таблицы
-@param *Open_Data - Указатель на данные для которых требуется расчитать имитовстаку.
-@param *Imitta - Указатель на массив размером _GOST_Imitta_Size(64 бита), куда будет занесен результат
-расчета имитовставки.
-@param Size - Размер данных
-@param *GOST_Table - Указатель на оптимизированную таблицу замены
-@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
-@attention  Для первого раунда массив Imitta должен быть заполнен _GOST_Def_Byte!
-*/
-void GOST_Imitta_Opt(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, GOST_Subst_Table *GOST_Table, uint8_t *GOST_Key );
+void GOST_Imitta(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size,  uint8_t *GOST_Table, uint8_t *GOST_Key );
 
 /**
 @details GOST_Encrypt_SR
@@ -153,17 +132,7 @@ void GOST_Imitta_Opt(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, GOST_Su
 */
 void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key );
 
-/**
-@details GOST_Encrypt_SR_Opt
-Оптимизированная функция шифрования/расшифрования в режиме простой замены.
-@param *Data - Указатель на данные для шифрования, также сюда заносится результат.
-@param Size - Размер данных
-@param Mode - Если _GOST_Mode_Encrypt шифрования, _GOST_Mode_Decrypt - расшифрование
-@param Table - Оптимизированная таблица замены
-@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
-@return 0 при успешном выполнении
-*/
-int GOST_Encrypt_SR_Opt(uint8_t *Data, uint32_t Size, uint8_t Mode, GOST_Subst_Table Table, uint8_t *GOST_Key );
+
 
 #if _GOST_ROT_Synchro_GAMMA==1
 /**
@@ -179,15 +148,6 @@ GOST_Crypt_G_Data. Если хранить синхропосылку в уже 
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 */
 void GOST_Crypt_G_PS(uint8_t *Synchro, uint8_t *GOST_Table, uint8_t *GOST_Key);
-
-/**
-@details GOST_Crypt_G_PS_Opt
-Оптимизированная функция подготовки Синхропосылки для режима гаммирования.
-@param *Synchro - Указатель на данные для шифрования, также сюда заносится результат.
-@param *GOST_Table - Указатель на оптимизированную таблицу замены
-@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
-*/
-void GOST_Crypt_G_PS_Opt(uint8_t *Synchro, GOST_Subst_Table *GOST_Table, uint8_t *GOST_Key);
 #else
 void GOST_Crypt_32_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *GOST_Key);
 /**
@@ -207,18 +167,6 @@ void GOST_Crypt_32_E_Cicle(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t *
 @attention Синхропосылка Synchro для первого вызова должна быть подготовлена функцией/макросом GOST_Crypt_G_PS.
 */
 void GOST_Crypt_G_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, uint8_t *GOST_Table, uint8_t *GOST_Key );
-
-/**
-@details GOST_Crypt_G_Data_Opt
-Оптимизированное шифрование\расшифрования блока данных в режиме гаммирования.
-@param *Data - Указатель на данные для шифрования\расшифрования, также сюда заносится результат работы.
-@param Size - Размер данных
-@param *Synchro - Указатель на синхопросылку, также сюда заносится текущее значение синхропосылки.
-@param *GOST_Table - Указатель на оптимизированную таблицу замены.
-@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
-@attention Синхропосылка Synchro для первого вызова должна быть подготовлена функцией/макросом GOST_Crypt_G_PS_Opt.
-*/
-void GOST_Crypt_G_Data_Opt(uint8_t *Data, uint32_t Size, uint8_t *Synchro, GOST_Subst_Table *GOST_Table, uint8_t *GOST_Key );
 
 #if _GOST_ROT_Synchro_GAMMA==1
 /**
@@ -250,6 +198,44 @@ void GOST_Crypt_GF_Prepare_S(uint8_t *Synchro);
 Synchro для первого вызова должна быть подготовлена функцией GOST_Crypt_GF_Prepare_S.
 */
 void GOST_Crypt_GF_Data(uint8_t *Data, uint32_t Size, uint8_t *Synchro, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key );
+
+
+/**
+@details GOST_Imitta_Opt
+Оптимизированная подпрограма расчета имитовставки с использованием предвычисленной таблицы
+@param *Open_Data - Указатель на данные для которых требуется расчитать имитовстаку.
+@param *Imitta - Указатель на массив размером _GOST_Imitta_Size(64 бита), куда будет занесен результат
+расчета имитовставки.
+@param Size - Размер данных
+@param *GOST_Table - Указатель на оптимизированную таблицу замены
+@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
+@attention  Для первого раунда массив Imitta должен быть заполнен _GOST_Def_Byte!
+*/
+void GOST_Imitta_Opt_A(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key );
+
+/**
+@details GOST_Encrypt_SR_Opt
+Оптимизированная функция шифрования/расшифрования в режиме простой замены.
+@param *Data - Указатель на данные для шифрования, также сюда заносится результат.
+@param Size - Размер данных
+@param Mode - Если _GOST_Mode_Encrypt шифрования, _GOST_Mode_Decrypt - расшифрование
+@param Table - Оптимизированная таблица замены
+@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
+@return 0 при успешном выполнении
+*/
+int GOST_Encrypt_SR_Opt(uint8_t *Data, uint32_t Size, uint8_t Mode, GOST_Subst_Table Table, uint8_t *GOST_Key );
+
+/**
+@details GOST_Crypt_G_Data_Opt
+Оптимизированное шифрование\расшифрования блока данных в режиме гаммирования.
+@param *Data - Указатель на данные для шифрования\расшифрования, также сюда заносится результат работы.
+@param Size - Размер данных
+@param *Synchro - Указатель на синхопросылку, также сюда заносится текущее значение синхропосылки.
+@param *GOST_Table - Указатель на оптимизированную таблицу замены.
+@param *GOST_Key - Указатель на 256 битный массив ключа(СК).
+@attention Синхропосылка Synchro для первого вызова должна быть подготовлена функцией/макросом GOST_Crypt_G_PS_Opt.
+*/
+void GOST_Crypt_G_Data_Opt(uint8_t *Data, uint32_t Size, uint8_t *Synchro, GOST_Subst_Table *GOST_Table, uint8_t *GOST_Key );
 
 /**
 @details GOST_Crypt_GF_Data_Opt
@@ -297,5 +283,12 @@ void GOST_Crypt_32_E_Cicle_Opt(uint32_t *n1, uint32_t *n2, GOST_Subst_Table Tabl
 @param GOST_Key - Массив ключей для всех шагов
 */
 void GOST_Crypt_32_D_Cicle_Opt(uint32_t *n1, uint32_t *n2, GOST_Subst_Table Table, uint32_t *GOST_Key);
+
+
+void GOST_Crypt_32_E_Cicle_Opt_A(GOST_Data_Part *DATA, GOST_Subst_Table Table, uint32_t *GOST_Key);
+
+void GOST_Crypt_32_D_Cicle_Opt_A(GOST_Data_Part *DATA, GOST_Subst_Table Table, uint32_t *GOST_Key);
+
+void GOST_Crypt_Step_Opt_A(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Key, bool Last);
 
 #endif // GOST_H

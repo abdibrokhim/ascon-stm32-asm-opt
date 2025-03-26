@@ -27,6 +27,8 @@
         "stdbool.h": "c",
         "crypto_gost.h": "c",
         "gosttt.h": "c",
-        "gost_old.h": "c"
+        "gost_old.h": "c",
+        "cstring": "cpp",
+        "gost_opt.h": "c"
     }
 }

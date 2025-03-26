@@ -1,4 +1,7 @@
 #include "main.h"
+#include "stm32f1xx_hal.h"
+#include "gost28147_89/gost.h"
+#include "gost28147_89/gost_opt.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +25,7 @@
 
 // GOST header begin //
 #include "gost28147_89/gost.h"
-// #include "gost28147_89/gost_old.h"
+// #include "gost28147_89/gost_opt.h"
 // GOST header end //
 
 // Private function prototypes
@@ -82,67 +85,156 @@ void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
 //   return result;
 // }
 
-
-
 /* GOST test function */
 int gost_main() {
     // Define the 256-bit key (32 bytes)
     uint8_t key[32] = {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-        0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+        0x04, 0x75, 0xF6, 0xE0, 0x50, 0x38, 0xFB, 0xFA, 
+        0xD2, 0xC7, 0xC3, 0x90, 0xED, 0xB3, 0xCA, 0x3D,
+        0x15, 0x47, 0x12, 0x42, 0x91, 0xAE, 0x1E, 0x8A, 
+        0x2F, 0x79, 0xCD, 0x9E, 0xD2, 0xBC, 0xEF, 0xBD
     };
 
     // Define a sample S-box (128 bytes, 8 rows of 16 nibbles)
-    // Note: Replace with the actual GOST S-box for correct operation
     uint8_t sbox[128] = {
-    0x04, 0x02, 0x0F, 0x05, 0x09, 0x01, 0x00, 0x08, 0x0E, 0x03, 0x0B, 0x0C, 0x0D, 0x07, 0x0A, 0x06,
-    0x0C, 0x09, 0x0F, 0x0E, 0x08, 0x01, 0x03, 0x0A, 0x02, 0x07, 0x04, 0x0D, 0x06, 0x00, 0x0B, 0x05,
-    0x0D, 0x08, 0x0E, 0x0C, 0x07, 0x03, 0x09, 0x0A, 0x01, 0x05, 0x02, 0x04, 0x06, 0x0F, 0x00, 0x0B,
-    0x0E, 0x09, 0x0B, 0x02, 0x05, 0x0F, 0x07, 0x01, 0x00, 0x0D, 0x0C, 0x06, 0x0A, 0x04, 0x03, 0x08,
-    0x03, 0x0E, 0x05, 0x09, 0x06, 0x08, 0x00, 0x0D, 0x0A, 0x0B, 0x07, 0x0C, 0x02, 0x01, 0x0F, 0x04,
-    0x08, 0x0F, 0x06, 0x0B, 0x01, 0x09, 0x0C, 0x05, 0x0D, 0x03, 0x07, 0x0A, 0x00, 0x0E, 0x02, 0x04,
-    0x09, 0x0B, 0x0C, 0x00, 0x03, 0x06, 0x07, 0x05, 0x04, 0x08, 0x0E, 0x0F, 0x01, 0x0A, 0x02, 0x0D,
-    0x0C, 0x06, 0x05, 0x02, 0x0B, 0x00, 0x09, 0x0D, 0x03, 0x0E, 0x07, 0x0A, 0x0F, 0x04, 0x01, 0x08
+        0x04, 0x02, 0x0F, 0x05, 0x09, 0x01, 0x00, 0x08, 0x0E, 0x03, 0x0B, 0x0C, 0x0D, 0x07, 0x0A, 0x06,
+        0x0C, 0x09, 0x0F, 0x0E, 0x08, 0x01, 0x03, 0x0A, 0x02, 0x07, 0x04, 0x0D, 0x06, 0x00, 0x0B, 0x05,
+        0x0D, 0x08, 0x0E, 0x0C, 0x07, 0x03, 0x09, 0x0A, 0x01, 0x05, 0x02, 0x04, 0x06, 0x0F, 0x00, 0x0B,
+        0x0E, 0x09, 0x0B, 0x02, 0x05, 0x0F, 0x07, 0x01, 0x00, 0x0D, 0x0C, 0x06, 0x0A, 0x04, 0x03, 0x08,
+        0x03, 0x0E, 0x05, 0x09, 0x06, 0x08, 0x00, 0x0D, 0x0A, 0x0B, 0x07, 0x0C, 0x02, 0x01, 0x0F, 0x04,
+        0x08, 0x0F, 0x06, 0x0B, 0x01, 0x09, 0x0C, 0x05, 0x0D, 0x03, 0x07, 0x0A, 0x00, 0x0E, 0x02, 0x04,
+        0x09, 0x0B, 0x0C, 0x00, 0x03, 0x06, 0x07, 0x05, 0x04, 0x08, 0x0E, 0x0F, 0x01, 0x0A, 0x02, 0x0D,
+        0x0C, 0x06, 0x05, 0x02, 0x0B, 0x00, 0x09, 0x0D, 0x03, 0x0E, 0x07, 0x0A, 0x0F, 0x04, 0x01, 0x08
+    };
+
+    // Test data (64 bytes - multiple blocks)
+    uint8_t test_data[64];
+    
+    // Initialize test data
+    for (int i = 0; i < sizeof(test_data); i++) {
+        test_data[i] = i & 0xFF;
+    }
+
+    // Performance measurement variables
+    uint32_t iterations = 20000;
+    uint32_t start_time, end_time, elapsed;
+    
+    // Signal start of benchmark
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(5000); // Wait 3 seconds
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+    
+    // Measure time for original GOST implementation
+    start_time = HAL_GetTick();
+    for (uint32_t i = 0; i < iterations; i++) {
+        GOST_Encrypt_SR(test_data, 8, _GOST_Mode_Encrypt, sbox, key);
+    }
+    end_time = HAL_GetTick();
+    elapsed = end_time - start_time;
+    
+    // Signal end of benchmark
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+    
+    // Flash LED to indicate elapsed time (in seconds)
+    uint32_t elapsed_seconds = elapsed / 1000;
+    if (elapsed_seconds == 0) elapsed_seconds = 1;
+    
+    HAL_Delay(2000); // Pause before blinking
+    
+    for (uint32_t i = 0; i < elapsed_seconds; i++) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+        HAL_Delay(200);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+        HAL_Delay(200);
+    }
+    
+    return elapsed;
+}
+
+/* GOST test function */
+// Optimized GOST
+int gost_opt_main() {
+    // Define the 256-bit key (32 bytes) - SAME AS gost_main()
+    uint8_t key[32] = {
+        0x04, 0x75, 0xF6, 0xE0, 0x50, 0x38, 0xFB, 0xFA, 
+        0xD2, 0xC7, 0xC3, 0x90, 0xED, 0xB3, 0xCA, 0x3D,
+        0x15, 0x47, 0x12, 0x42, 0x91, 0xAE, 0x1E, 0x8A, 
+        0x2F, 0x79, 0xCD, 0x9E, 0xD2, 0xBC, 0xEF, 0xBD
+    };
+
+    // Define a sample S-box (128 bytes, 8 rows of 16 nibbles) - SAME AS gost_main()
+    uint8_t sbox[128] = {
+        0x04, 0x02, 0x0F, 0x05, 0x09, 0x01, 0x00, 0x08, 0x0E, 0x03, 0x0B, 0x0C, 0x0D, 0x07, 0x0A, 0x06,
+        0x0C, 0x09, 0x0F, 0x0E, 0x08, 0x01, 0x03, 0x0A, 0x02, 0x07, 0x04, 0x0D, 0x06, 0x00, 0x0B, 0x05,
+        0x0D, 0x08, 0x0E, 0x0C, 0x07, 0x03, 0x09, 0x0A, 0x01, 0x05, 0x02, 0x04, 0x06, 0x0F, 0x00, 0x0B,
+        0x0E, 0x09, 0x0B, 0x02, 0x05, 0x0F, 0x07, 0x01, 0x00, 0x0D, 0x0C, 0x06, 0x0A, 0x04, 0x03, 0x08,
+        0x03, 0x0E, 0x05, 0x09, 0x06, 0x08, 0x00, 0x0D, 0x0A, 0x0B, 0x07, 0x0C, 0x02, 0x01, 0x0F, 0x04,
+        0x08, 0x0F, 0x06, 0x0B, 0x01, 0x09, 0x0C, 0x05, 0x0D, 0x03, 0x07, 0x0A, 0x00, 0x0E, 0x02, 0x04,
+        0x09, 0x0B, 0x0C, 0x00, 0x03, 0x06, 0x07, 0x05, 0x04, 0x08, 0x0E, 0x0F, 0x01, 0x0A, 0x02, 0x0D,
+        0x0C, 0x06, 0x05, 0x02, 0x0B, 0x00, 0x09, 0x0D, 0x03, 0x0E, 0x07, 0x0A, 0x0F, 0x04, 0x01, 0x08
     };
 
     // Create optimized substitution table
     GOST_Subst_Table subst_table;
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 16; j++)
-        for(int k = 0; k < 16; k++){
-            // Calculate linear index into the table
-            int idx = i * 256 + j * 16 + k;
-            // Calculate substitution value from original S-box
-            subst_table[idx] = sbox[i*32 + j + 16]*16 + sbox[i*32 + k];
+    for(int i = 0; i < 4; i++) {
+        uint8_t* sbox_low = sbox + (i * 2) * 16;
+        uint8_t* sbox_high = sbox + (i * 2 + 1) * 16;
+        
+        for(int b = 0; b < 256; b++) {
+            uint8_t low_nibble = b & 0x0F;
+            uint8_t high_nibble = (b >> 4) & 0x0F;
+            uint8_t low_subst = sbox_low[low_nibble];
+            uint8_t high_subst = sbox_high[high_nibble];
+            subst_table[i*256 + b] = low_subst | (high_subst << 4);
         }
     }
 
-    // Define plaintext (64-bit block, 8 bytes)
-    uint8_t plaintext[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    int result = 0;
-
-    // Measure performance: Encrypt multiple times
-    uint32_t iterations = 20000;
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
-    HAL_Delay(5000);                          // Wait 5 seconds
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
-
-    // uint32_t start_time = HAL_GetTick();
-    for (uint32_t i = 0; i < iterations; i++) {
-        // Use the optimized encryption function with precomputed tables
-        GOST_Encrypt_SR_Opt(plaintext, 8, _GOST_Mode_Encrypt, subst_table, key);
-    }
-    // uint32_t end_time = HAL_GetTick();
-    // uint32_t elapsed = end_time - start_time;
+    // Test data (identical to gost_main)
+    uint8_t test_data[64];
     
-    // Indicate test result via LED
+    // Initialize test data (identical to gost_main)
+    for (int i = 0; i < sizeof(test_data); i++) {
+        test_data[i] = i & 0xFF;
+    }
+    
+    // Performance measurement variables
+    uint32_t iterations = 20000;
+    uint32_t start_time, end_time, elapsed;
+    
+    // Signal start of benchmark
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
-    HAL_Delay(5000); // Wait 5 seconds
+    HAL_Delay(5000); // Wait 3 seconds
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
 
-    return result;
+    // Measure performance
+    start_time = HAL_GetTick();
+    for (uint32_t i = 0; i < iterations; i++) {
+        GOST_Encrypt_SR_Opt(test_data, 8, _GOST_Mode_Encrypt, subst_table, key);
+    }
+    end_time = HAL_GetTick();
+    elapsed = end_time - start_time;
+    
+    // Signal end of benchmark
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+    
+    // Flash LED to indicate elapsed time (in seconds)
+    uint32_t elapsed_seconds = elapsed / 1000;
+    if (elapsed_seconds == 0) elapsed_seconds = 1;
+    
+    HAL_Delay(2000); // Pause before blinking
+    
+    for (uint32_t i = 0; i < elapsed_seconds; i++) {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+        HAL_Delay(200);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+        HAL_Delay(200);
+    }
+
+    return elapsed;
 }
 
 
@@ -225,8 +317,57 @@ int main(void)
   /* ASCON CODE END */
 
   /* GOST CODE BEGIN */
-  gost_main();
+  // Original GOST
+  uint32_t orig_time = gost_main(); // it took 04:49 secs
   /* GOST CODE END */
+
+  /* GOST CODE BEGIN */
+  // Optimized GOST
+  uint32_t opt_time = gost_opt_main(); // it took 02:27 secs
+  /* GOST CODE END */
+
+  // Show performance comparison
+  HAL_Delay(3000); // Pause before final results
+
+  // Calculate performance improvement ratio
+  float improvement = 0;
+  if (opt_time > 0) {
+    improvement = (float)orig_time / opt_time;
+  }
+
+  // Display results through LED blinks
+  // First: Original time (1 blink per second)
+  // Second: Optimized time (1 blink per second)
+  // Third: Performance ratio (number of blinks indicates improvement factor)
+  
+  // Display the improvement factor
+  int blinks = 0;
+  if (improvement >= 1.0f) {
+    blinks = (int)improvement;
+    if (blinks < 1) blinks = 1;
+    if (blinks > 10) blinks = 10; // Cap at 10 blinks
+    
+    // Rapid blinks indicate speedup factor
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+    HAL_Delay(1000);
+    
+    for (int i = 0; i < blinks; i++) {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+      HAL_Delay(100);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+      HAL_Delay(100);
+    }
+  } else {
+    // Slow blinks indicate slowdown (optimization failed)
+    for (int i = 0; i < 3; i++) {
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0); // LED ON
+      HAL_Delay(1000);
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // LED OFF
+      HAL_Delay(1000);
+    }
+  }
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
