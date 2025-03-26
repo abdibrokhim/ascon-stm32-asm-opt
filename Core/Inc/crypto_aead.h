@@ -9,5 +9,3 @@ int crypto_aead_decrypt(unsigned char *m, unsigned long long *mlen,
                         unsigned long long clen, const unsigned char *ad,
                         unsigned long long adlen, const unsigned char *npub,
                         const unsigned char *k);
-
-// void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key );

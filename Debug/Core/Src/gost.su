@@ -1,0 +1,10 @@
+../Core/Src/gost.c:86:6:GOST_Crypt_Step	16	static
+../Core/Src/gost.c:147:6:GOST_Crypt_32_E_Cicle	56	static
+../Core/Src/gost.c:185:6:GOST_Crypt_32_D_Cicle	56	static
+../Core/Src/gost.c:225:6:GOST_Imitta_16_E_Cicle	56	static
+../Core/Src/gost.c:257:6:GOST_Imitta	64	static
+../Core/Src/gost.c:291:6:GOST_Encrypt_SR	40	static
+../Core/Src/gost.c:332:6:GOST_Crypt_G_PS	4	static
+../Core/Src/gost.c:354:6:GOST_Crypt_G_Data	48	static
+../Core/Src/gost.c:390:6:GOST_Crypt_GF_Prepare_S	0	static
+../Core/Src/gost.c:414:6:GOST_Crypt_GF_Data	32	static

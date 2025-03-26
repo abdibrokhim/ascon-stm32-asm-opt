@@ -4,8 +4,8 @@
 */
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include "gost.h"
+#include "gost28147_89/gost_old.h"
+// #include <ia32intrin.h>
 /**
   @def _SWAPW32(W)
   Задает обратный порядок байт в 4х байтном числе. Для совместимости архитектур.
@@ -33,6 +33,12 @@
 */
 #define _GOST_ADC32(x,y,c) c=(uint32_t)(x+y); c+=( ( c<x ) | ( c<y ) )
 
+// Add a custom rotate left implementation to replace _lrotl
+// Note: the code is speed up from 09:44 secs to 09:17 secs.
+static inline uint32_t custom_lrotl(uint32_t value, int shift) {
+    return (value << shift) | (value >> (32 - shift));
+} // speed up from 09:44 secs to 09:17 secs.
+
 /**
 @details GOST_Crypt_Step
 Выполняет простейший шаг криптопреобразования(шифрования и расшифрования) ГОСТ28147-89
@@ -45,7 +51,6 @@
 сохраняется в N2, а результат работы будет занесен в накопитель N1.
 */
 //GOST basic Simple Step
-/** 
 void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Key, bool Last )
 {
     typedef  union
@@ -70,7 +75,7 @@ void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Ke
         GOST_Table+= _GOST_TABLE_MAX_NODE_VALUE;//next line in table
 
     }
-    S.full = (*DATA).half[_GOST_Data_Part_N2_Half]^_lrotl(S.full,11);//S=Rl(11,S); rol S,11 //S XOR N2
+    S.full = (*DATA).half[_GOST_Data_Part_N2_Half]^custom_lrotl(S.full,11);//S=Rl(11,S); rol S,11 //S XOR N2
     if (Last)
     {
         (*DATA).half[_GOST_Data_Part_N2_Half] = S.full; //N2=S
@@ -79,88 +84,7 @@ void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Ke
         (*DATA).half[_GOST_Data_Part_N2_Half] = (*DATA).half[_GOST_Data_Part_N1_Half];//N2=N1
         (*DATA).half[_GOST_Data_Part_N1_Half] = S.full;//N1=S
     }
-} // took 09:44 secs
-*/
-
-void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Key, bool Last) {
-    __asm__ __volatile__(
-        "ldr r4, [%0, #4] \n\t"      // Load N1
-        "add r4, r4, %2 \n\t"        // Add GOST_Key
-        "mov r11, %1 \n\t"           // Use %1 for GOST_Table instead of r12
-
-        // m=0
-        "and r6, r4, #0x0F \n\t"     // Low 4 bits of r4
-        "add r12, r11, #16 \n\t"     // r12 = r11 + 16
-        "ldrb r8, [r11, r6] \n\t"    // Low value
-        "lsr r5, r4, #4 \n\t"
-        "and r5, r5, #0x0F \n\t"     // Using r5 instead of r7
-        "ldrb r9, [r12, r5] \n\t"    // High value (using r5 instead of r7)
-        "orr r10, r8, r9, lsl #4 \n\t"
-        "bfi r4, r10, #0, #8 \n\t"
-
-        // m=1
-        "add r11, r11, #32 \n\t"     // Update base pointer
-        "lsr r5, r4, #8 \n\t"
-        "and r5, r5, #0xFF \n\t"
-        "and r6, r5, #0x0F \n\t"
-        "add r12, r11, #16 \n\t"     // r12 = r11 + 16
-        "ldrb r8, [r11, r6] \n\t"
-        "lsr r5, r5, #4 \n\t"
-        "and r5, r5, #0x0F \n\t"     // Using r5 instead of r7
-        "ldrb r9, [r12, r5] \n\t"    // Using r12+r5 instead of r12+#16+r7
-        "orr r10, r8, r9, lsl #4 \n\t"
-        "bfi r4, r10, #8, #8 \n\t"
-
-        // m=2
-        "add r11, r11, #32 \n\t"     // Update base pointer
-        "lsr r5, r4, #16 \n\t"
-        "and r5, r5, #0xFF \n\t"
-        "and r6, r5, #0x0F \n\t"
-        "add r12, r11, #16 \n\t"     // r12 = r11 + 16
-        "ldrb r8, [r11, r6] \n\t"
-        "lsr r5, r5, #4 \n\t"
-        "and r5, r5, #0x0F \n\t"     // Using r5 instead of r7
-        "ldrb r9, [r12, r5] \n\t"    // Using r12+r5 instead of r12+#16+r7
-        "orr r10, r8, r9, lsl #4 \n\t"
-        "bfi r4, r10, #16, #8 \n\t"
-
-        // m=3
-        "add r11, r11, #32 \n\t"     // Update base pointer
-        "lsr r5, r4, #24 \n\t"
-        "and r5, r5, #0xFF \n\t"
-        "and r6, r5, #0x0F \n\t"
-        "add r12, r11, #16 \n\t"     // r12 = r11 + 16
-        "ldrb r8, [r11, r6] \n\t"
-        "lsr r5, r5, #4 \n\t"
-        "and r5, r5, #0x0F \n\t"     // Using r5 instead of r7
-        "ldrb r9, [r12, r5] \n\t"    // Using r12+r5 instead of r12+#16+r7
-        "orr r10, r8, r9, lsl #4 \n\t"
-        "bfi r4, r10, #24, #8 \n\t"
-
-        // Rotate left by 11 and XOR with N2
-        "mov r6, r4, lsl #11 \n\t"
-        "mov r5, r4, lsr #21 \n\t"   // Using r5 instead of r7
-        "orr r4, r6, r5 \n\t"        // Using r5 instead of r7
-        "ldr r5, [%0] \n\t"          // Load N2
-        "eor r4, r5, r4 \n\t"
-
-        // Conditional update
-        "cmp %3, #1 \n\t"
-        "beq 1f \n\t"
-        "ldr r6, [%0, #4] \n\t"
-        "str r6, [%0] \n\t"
-        "str r4, [%0, #4] \n\t"
-        "b 2f \n\t"
-        "1: \n\t"
-        "str r4, [%0] \n\t"
-        "2: \n\t"
-
-        :
-        : "r"(DATA), "r"(GOST_Table), "r"(GOST_Key), "r"(Last)
-        : "r4", "r5", "r6", "r8", "r9", "r10", "r11", "r12", "memory"
-    );
 }
-
 
 /**
 @details GOST_Crypt_32_E_Cicle
@@ -315,7 +239,6 @@ void GOST_Imitta(uint8_t *Open_Data,  uint8_t *Imitta, uint32_t Size, uint8_t *G
 (вместо старшого полубайта 0)
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 */
-/** 
 void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key )
 {
     uint8_t Cur_Part_Size;
@@ -347,41 +270,6 @@ void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Tabl
         Size-=Cur_Part_Size;
    }
 
-}
-*/
-
-void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key ) {
-    uint8_t Cur_Part_Size;
-    GOST_Data_Part Data_prep;
-    uint32_t *GOST_Key_pt=(uint32_t *) GOST_Key;
-
-    while (Size!=0)
-    {
-        Cur_Part_Size=_Min(_GOST_Part_Size,Size);
-        memset(&Data_prep,_GOST_Def_Byte,sizeof(Data_prep));
-        memcpy(&Data_prep,Data,Cur_Part_Size);
-#if _GOST_ROT==1
-        // Replace _SWAPW32 with rev
-        __asm__ __volatile__("rev %0, %0" : "+r"(Data_prep.half[_GOST_Data_Part_N2_Half]));
-        __asm__ __volatile__("rev %0, %0" : "+r"(Data_prep.half[_GOST_Data_Part_N1_Half]));
-#endif
-        GOST_Crypt_32_E_Cicle(&Data_prep,GOST_Table,GOST_Key_pt);
-        // if (Mode==_GOST_Mode_Encrypt)
-        // {
-        //     GOST_Crypt_32_E_Cicle(&Data_prep,GOST_Table,GOST_Key_pt);
-        // } else
-        // {
-        //     GOST_Crypt_32_D_Cicle(&Data_prep,GOST_Table,GOST_Key_pt);
-        // }
-#if _GOST_ROT==1
-        // Replace _SWAPW32 with rev
-        __asm__ __volatile__("rev %0, %0" : "+r"(Data_prep.half[_GOST_Data_Part_N2_Half]));
-        __asm__ __volatile__("rev %0, %0" : "+r"(Data_prep.half[_GOST_Data_Part_N1_Half]));
-#endif
-        memcpy(Data,&Data_prep, Cur_Part_Size);
-        Data+=Cur_Part_Size;
-        Size-=Cur_Part_Size;
-    }
 }
 
 #if _GOST_ROT_Synchro_GAMMA==1

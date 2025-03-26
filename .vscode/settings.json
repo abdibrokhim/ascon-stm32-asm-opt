@@ -25,6 +25,8 @@
         "gost.h": "c",
         "__config": "cpp",
         "stdbool.h": "c",
-        "crypto_gost.h": "c"
+        "crypto_gost.h": "c",
+        "gosttt.h": "c",
+        "gost_old.h": "c"
     }
 }

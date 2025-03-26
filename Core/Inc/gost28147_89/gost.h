@@ -132,7 +132,7 @@ void GOST_Imitta(uint8_t *Open_Data, uint8_t *Imitta, uint32_t Size,  uint8_t *G
 (вместо старшого полубайта 0)
 @param *GOST_Key - Указатель на 256 битный массив ключа(СК).
 */
-void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, uint8_t *GOST_Table, uint8_t *GOST_Key );
+void GOST_Encrypt_SR(uint8_t *Data, uint32_t Size, bool Mode, uint8_t *GOST_Table, uint8_t *GOST_Key );
 
 
 
