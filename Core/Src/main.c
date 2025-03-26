@@ -318,7 +318,7 @@ int main(void)
 
   /* GOST CODE BEGIN */
   // Original GOST
-  uint32_t orig_time = gost_main(); // it took 04:49 secs
+  uint32_t orig_time = gost_main(); // it took 04:49 - 04:56 secs
   /* GOST CODE END */
 
   /* GOST CODE BEGIN */
