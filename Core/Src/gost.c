@@ -45,44 +45,6 @@
 сохраняется в N2, а результат работы будет занесен в накопитель N1.
 */
 //GOST basic Simple Step
-/*
-void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Key, bool Last )
-{
-    typedef  union
-    {
-        uint32_t full;
-        uint8_t parts[_GOST_TABLE_NODES/2];
-    } GOST_Data_Part_sum;
-    GOST_Data_Part_sum S;
-    uint8_t m;
-    uint8_t tmp;
-    //N1=Lo(DATA); N2=Hi(DATA)
-
-    S.full = (uint32_t)((*DATA).half[_GOST_Data_Part_N1_Half]+GOST_Key) ;//S=(N1+X)mod2^32
-
-    for(m=0; m<(_GOST_TABLE_NODES/2); m++)
-    {
-        //S(m)=H(m,S)
-        tmp=S.parts[m];
-        S.parts[m] = *(GOST_Table+(tmp&0x0F));//Low value
-        GOST_Table+= _GOST_TABLE_MAX_NODE_VALUE;//next line in table
-        S.parts[m] |= (*(GOST_Table+((tmp&0xF0)>>4)))<<4;//Hi value
-        GOST_Table+= _GOST_TABLE_MAX_NODE_VALUE;//next line in table
-
-    }
-    S.full = (*DATA).half[_GOST_Data_Part_N2_Half]^_lrotl(S.full,11);//S=Rl(11,S); rol S,11 //S XOR N2
-    if (Last)
-    {
-        (*DATA).half[_GOST_Data_Part_N2_Half] = S.full; //N2=S
-    }else
-    {
-        (*DATA).half[_GOST_Data_Part_N2_Half] = (*DATA).half[_GOST_Data_Part_N1_Half];//N2=N1
-        (*DATA).half[_GOST_Data_Part_N1_Half] = S.full;//N1=S
-    }
-} // took 09:44 secs
-*/
-
-// /*
 void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Key, bool Last) {
     typedef union {
         uint32_t full;
@@ -90,40 +52,32 @@ void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Ke
     } GOST_Data_Part_sum;
     
     GOST_Data_Part_sum S;
-    uint8_t *original_table = GOST_Table;
+    uint32_t n2 = (*DATA).half[_GOST_Data_Part_N2_Half];
     
     // N1=Lo(DATA); N2=Hi(DATA)
     // S=(N1+X)mod2^32
     S.full = (uint32_t)((*DATA).half[_GOST_Data_Part_N1_Half] + GOST_Key);
     
-    // Process each byte through substitution tables
-    for (uint8_t m = 0; m < (_GOST_TABLE_NODES/2); m++) {
-        uint8_t tmp = S.parts[m];
+    // Process substitution table lookups all at once
+    uint32_t result = 0;
+    for (uint8_t m = 0; m < 4; m++) {
+        uint8_t val = S.parts[m];
+        uint8_t low_subst = *(GOST_Table + (val & 0x0F));
+        uint8_t high_subst = *(GOST_Table + _GOST_TABLE_MAX_NODE_VALUE + ((val >> 4) & 0x0F));
         
-        // Get low nibble substitution
-        uint8_t low_nibble = tmp & 0x0F;
-        uint8_t low_subst = *(GOST_Table + low_nibble);
+        // Store substitution result
+        uint8_t subst_result = low_subst | (high_subst << 4);
         
-        // Move to high nibble table
-        GOST_Table += _GOST_TABLE_MAX_NODE_VALUE;
-        
-        // Get high nibble substitution
-        uint8_t high_nibble = (tmp & 0xF0) >> 4;
-        uint8_t high_subst = *(GOST_Table + high_nibble);
-        
-        // Combine substitutions
-        S.parts[m] = low_subst | (high_subst << 4);
+        // Add to result
+        result |= ((uint32_t)subst_result << (8 * m));
         
         // Move to next byte's tables
-        GOST_Table += _GOST_TABLE_MAX_NODE_VALUE;
+        GOST_Table += 2 * _GOST_TABLE_MAX_NODE_VALUE;
     }
     
-    // Reset table pointer to original position
-    GOST_Table = original_table;
-    
     // Rotate left by 11 bits and XOR with N2
-    uint32_t rotated = (S.full << 11) | (S.full >> (32 - 11));
-    S.full = (*DATA).half[_GOST_Data_Part_N2_Half] ^ rotated;
+    uint32_t rotated = (result << 11) | (result >> (32 - 11));
+    S.full = n2 ^ rotated;
     
     // Update registers based on Last parameter
     if (Last) {
@@ -133,7 +87,6 @@ void GOST_Crypt_Step(GOST_Data_Part *DATA, uint8_t *GOST_Table, uint32_t GOST_Ke
         (*DATA).half[_GOST_Data_Part_N1_Half] = S.full; // N1=S
     }
 } // took 04:54 secs
-// */
 
 /**
 @details GOST_Crypt_32_E_Cicle
