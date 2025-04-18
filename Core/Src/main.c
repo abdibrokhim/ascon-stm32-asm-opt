@@ -25,7 +25,6 @@
 
 // GOST header begin //
 #include "gost28147_89/gost.h"
-// #include "gost28147_89/gost_opt.h"
 // GOST header end //
 
 // Private function prototypes
