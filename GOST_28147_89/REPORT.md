@@ -1,3 +1,5 @@
+non original paper link: https://www.researchgate.net/publication/220335508_Security_Evaluation_of_GOST_28147-89_In_View_Of_International_Standardisation
+
 ### Calculating the Performance Improvement
 
 To determine the improvement between the original GOST implementation (`gost_main()`) and the optimized GOST implementation (`gost_opt_main()`), we’ll use the execution times provided: the original took **04:49 seconds**, and the optimized took **02:27 seconds**. Let’s break this down step-by-step.

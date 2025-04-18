@@ -312,7 +312,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* ASCON CODE BEGIN */
-  // ascon_main();
+  // ascon_main(); // it took 584 seconds (11.11% faster than the original)
   /* ASCON CODE END */
 
   /* GOST CODE BEGIN */
@@ -322,7 +322,7 @@ int main(void)
 
   /* GOST CODE BEGIN */
   // Optimized GOST
-  uint32_t opt_time = gost_opt_main(); // it took 02:27 secs
+  uint32_t opt_time = gost_opt_main(); // it took 02:27 secs (49.13% faster than the original)
   /* GOST CODE END */
 
   // Show performance comparison

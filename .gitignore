@@ -1,3 +1,7 @@
 a.md
 prompt.md
 .DS_Store
+prompts/
+prompts.md
+prompts_followup.md
+prompt_diff_opt.md
