@@ -29,6 +29,7 @@
         "gosttt.h": "c",
         "gost_old.h": "c",
         "cstring": "cpp",
-        "gost_opt.h": "c"
+        "gost_opt.h": "c",
+        "time.h": "c"
     }
 }
