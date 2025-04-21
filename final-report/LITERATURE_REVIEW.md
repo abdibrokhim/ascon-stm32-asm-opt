@@ -85,6 +85,10 @@ To execute and time the program run the following command:
 time ./bubble_sort
 ```
 
+```bash
+C bubble sort time: 1.305865 seconds
+```
+
 The -O3 flag enables optimizations such as loop unrolling and function inlining. Execution time is measured using the SysTick timer for an array of size ( N = 32768 ).
 
 Assembly Implementation
@@ -145,6 +149,10 @@ To execute and time the program run the following command:
 
 ```bash
 time ./bubble_sort_asm
+```
+
+```bash
+Assembly bubble sort time: 1.366740 seconds
 ```
 
 Execution time is measured using the SysTick timer, consistent with the C implementation.
@@ -225,7 +233,6 @@ C bubble sort time: 1.002104 seconds
 Assembly bubble sort time: 1.342916 seconds
 Performance improvement: -34.009644%
 Verification successful: both implementations produce identical results
-abdibrokhim@Ibrohims-MacBook-Pro verify %
 ```
 
 Interestingly, our assembly implementation is actually slower than the C version. This is likely because the compiler is able to produce highly optimized code with -O3 for the C version. Let's improve our assembly implementation (refer to Materials and Methods section).

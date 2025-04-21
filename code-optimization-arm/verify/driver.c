@@ -5,6 +5,7 @@
 #define N 32768
 
 void bubble_sort(int *data, int n);
+// void bubble_sort_optimized(int *data, int n);
 int bubble_sort_asm(int *data, int n);
 
 int main() {
