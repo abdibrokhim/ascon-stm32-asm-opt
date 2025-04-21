@@ -14,3 +14,20 @@
 - NIST Lightweight Cryptography Draft SP 800-227
 - ASCON v1.2 Specification Document
 - ARM Programming and Optimization: https://lira.epac.to/DOCS-TECH/Programming/Mobile%20and%20Embedded/Embedded/Embedded%20Systems%20-%20ARM%20Programming%20and%20Optimization.pdf
+The information presented is based on the official GOST 28147-89 specification (English summary in RFC 5830) ([
+            
+                RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms
+            
+        ](https://datatracker.ietf.org/doc/html/rfc5830#:~:text=%5BGOST28147,MAC%29%20generation%20rules)) ([
+            
+                RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms
+            
+        ](https://datatracker.ietf.org/doc/html/rfc5830#:~:text=The%20256%20bits%20of%20the,X7%20are)), historical accounts of its development ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)#:~:text=Developed%20in%20the%201970s%2C%20the,3)), technical descriptions of its operation ([
+            
+                RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms
+            
+        ](https://datatracker.ietf.org/doc/html/rfc5830#:~:text=In%20the%20first%20round%2C%20the,of%20register%20N1%20is%20unchanged)) ([
+            
+                RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms
+            
+        ](https://datatracker.ietf.org/doc/html/rfc5830#:~:text=A%20substitution%20box%20%28S,bit%20vector%20by%20a)), and published cryptanalysis results ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)#:~:text=even%20been%20called%20,11)), as well as updates from the 2015 revision of the standard ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)#:~:text=GOST%20R%2034.12,bit%20block%20cipher%20called%20Kuznyechik)).

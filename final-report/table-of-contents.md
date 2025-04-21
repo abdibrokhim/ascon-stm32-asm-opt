@@ -19,7 +19,6 @@
     3.3. C vs. Assembly: Case Study of Bubble Sort  
     3.4. ASCON AEAD and Hashing: Specifications & Baseline Implementations  
     3.5. GOST 28147‑89: Encryption, Decryption & MAC Algorithms  
-    3.6. Research Gaps and Thesis Focus  
 
 4. **Materials and Methods**  
     4.1. Experimental Platform  
