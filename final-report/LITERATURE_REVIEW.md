@@ -367,6 +367,7 @@ s[4] ^= key[1];
 ```
 
 This phase, illustrated in Figure X, ensures the state is uniquely initialized, preventing attacks that exploit predictable states.
+
 Encryption Phase
 The encryption phase processes plaintext in 128-bit blocks, assuming no associated data and block-aligned plaintext for simplicity. For each block:
 
