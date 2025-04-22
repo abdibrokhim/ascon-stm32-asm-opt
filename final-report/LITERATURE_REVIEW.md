@@ -420,19 +420,19 @@ Ciphertext: 5e44eae1014e4d6d d29ba5b8df69b82b
 Tag:        eadbf1671a8bc8f3 59042955620e7b16
 ```
 
-
 Table: ASCON-AEAD128 Parameters
 
-Component, Size (bits), Description
-State, 320, Five 64-bit words
-Key, 128, Two 64-bit words
-Nonce, 128, Two 64-bit words
-Tag, 128, Two 64-bit words for authentication
-Rate, 128, Bits processed per block (s[0], s[1])
-Capacity, 192, Remaining state bits for security
-Initialization Rounds, 12, Permutation rounds during initialization
-Encryption Rounds, 8, Permutation rounds per block
-Finalization Rounds, 12, Permutation rounds for tag generation
+| Component | Size (bits) | Description |
+|-----------|------------|-------------|
+| State | 320 | Five 64-bit words |
+| Key | 128 | Two 64-bit words |
+| Nonce | 128 | Two 64-bit words |
+| Tag | 128 | Two 64-bit words for authentication |
+| Rate | 128 | Bits processed per block (s[0], s[1]) |
+| Capacity | 192 | Remaining state bits for security |
+| Initialization Rounds | 12 | Permutation rounds during initialization |
+| Encryption Rounds | 8 | Permutation rounds per block |
+| Finalization Rounds | 12 | Permutation rounds for tag generation |
 
 > Full code implementation in Appendix A
 

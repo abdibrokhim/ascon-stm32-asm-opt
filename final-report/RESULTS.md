@@ -87,8 +87,3 @@ The 11.11% improvement from version [4] to the optimized version stems from the 
 | **Memory Usage**      | 128-byte S-box | 1024-byte precomputed table + 128-byte S-box |
 | **Code Size**         | Smaller (looped code) | Larger (unrolled code) |
 | **Security**          | Unchanged | Unchanged |
-
-
-### 5.4. Cross‑Experiment Comparison of Optimization Gains  
-
-TODO: Add results here

@@ -20,7 +20,7 @@
     3.4. ASCON AEAD and Hashing: Specifications & Baseline Implementations  
     3.5. GOST 28147‑89: Encryption, Decryption & MAC Algorithms  
 
-4. **Materials and Methods**  
+4. **Methods**  
     4.1. Experimental Platform  
         4.1.1. Hardware: STM32F103 & STM32F407 Discovery Boards  
         4.1.2. Toolchain and Measurement Setup  
@@ -45,17 +45,14 @@
     5.1. Bubble Sort: Execution‑Time & Memory Metrics  
     5.2. ASCON: Throughput, Latency & Footprint  
     5.3. GOST 28147‑89: Throughput, Latency & Footprint  
-    5.4. Cross‑Experiment Comparison of Optimization Gains  
 
 6. **Discussion**  
-    6.1. Implications for Embedded Cryptography  
-    6.2. Trade‑Offs Between Time and Memory Optimizations  
-    6.3. Study Limitations  
+    6.1. Trade‑Offs Between Time and Memory Optimizations  
+    6.2. Study Limitations  
 
-7. **Conclusion and Future Work**  
+7. **Conclusion**  
     7.1. Summary of Key Findings  
     7.2. Practical Recommendations  
-    7.3. Directions for Further Research  
 
 8. **References**  
     8.1. Complete list of all cited works.
