@@ -2,40 +2,12 @@
 
 ## Discussion
 
+The findings from this study highlight the pivotal role of optimization in enhancing the efficiency of embedded systems, particularly those operating under stringent resource constraints, such as the STM32F103 and STM32F407 Discovery Boards. By conducting experiments on the Bubble Sort algorithm, the ASCON lightweight cryptographic algorithm, and the GOST 28147-89 cryptographic standard, we demonstrated substantial improvements in both code size and execution time, addressing critical needs in resource-constrained environments like IoT applications.
+For the Bubble Sort algorithm, the primary focus was on reducing memory footprint. Techniques such as employing size-optimized libraries (e.g., newlib), removing unused code sections, and adjusting memory allocation strategies resulted in a remarkable reduction in code size from 141,320 bytes to as low as 4,012 bytes when combining optimizations. This significant decrease underscores the effectiveness of these methods in minimizing memory usage, which is essential for embedded systems with limited flash memory. The use of compiler optimization flags, such as -O3, further enhanced these outcomes by enabling advanced optimizations like loop unrolling and function inlining.
 
-### What Are the Trade-Offs?
+In contrast, the optimizations for ASCON and GOST 28147-89 prioritized execution time improvements. For ASCON, strategies including reduced memory accesses and optimized instruction scheduling led to a 39.6% speedup over the original implementation, reducing execution time from 15.63 seconds to 9.44 seconds. Similarly, for GOST 28147-89, optimizations such as using precomputed tables and unrolling all 32 rounds reduced execution time by 49.13%, from 4:49 seconds to 2:29 seconds for 64 bytes. However, these performance gains came with increased memory usage due to larger precomputed tables, illustrating a common trade-off in embedded system optimization where speed improvements may increase memory demands.
+Comparing these findings with prior studies, we observe alignment with established research on embedded system optimization. Previous work has demonstrated that compiler optimizations, such as those using -O3 flags, significantly improve execution time for algorithms like Bubble Sort, with one study noting a C implementation outperforming hand-optimized Assembly by 34.01% for an array of 32,768 elements. Our study extends this by showing that similar compiler-driven techniques, combined with memory-focused strategies, can drastically reduce code size, adding a new dimension to the optimization landscape. For cryptographic algorithms, our results corroborate literature suggestions that techniques like loop unrolling and memory alignment are effective for enhancing performance on ARM-based platforms, as seen in ASCON’s design for lightweight cryptography and GOST’s potential for optimization despite its 32-round structure.
+Nevertheless, several limitations must be acknowledged. The optimizations were tailored specifically for the STM32F103 and STM32F407 boards, which feature ARM Cortex-M3 and Cortex-M4 processors, respectively. While the techniques are theoretically applicable to other platforms, their effectiveness may vary due to differences in hardware architecture or resource constraints. The observed trade-offs between memory and speed optimizations necessitate careful consideration, as applications with strict memory limits may prioritize different strategies than those requiring high performance. Additionally, the study notes a pending cross-experiment comparison to generalize optimization gains across algorithms, indicating a gap in fully understanding the broader applicability of these findings.
 
-Optimizations introduce trade-offs that are worth exploring in your thesis:
-
-- **Code Complexity:** Inline assembly and bit-interleaving make the code harder to read and maintain, requiring expertise in ARM assembly.
-- **Code Size:** While version [4] is labeled “small,” bit-interleaving may increase code size slightly. The ASCON C implementation repository ([ASCON C](https://github.com/ascon/ascon-c)) reports `bi32_armv7m_small` at 1090 bytes for ASCON-AEAD128, compared to 1162 bytes for `armv6m_lowsize`, suggesting a modest size trade-off.
-- **Portability:** The optimized version is less portable, as it relies on ARM-specific instructions, unlike the pure C version [1].
-
-### Are There Security Implications?
-
-The optimizations are implementation-level changes and do not alter ASCON’s cryptographic properties. ASCON’s design includes natural resistance to side-channel attacks due to its low-degree S-box, and bit-interleaving does not introduce new vulnerabilities if implemented correctly ([Journal of Cryptology](https://link.springer.com/article/10.1007/s00145-021-09398-7)). However, you should emphasize the need to verify the assembly code to prevent errors that could lead to side-channel leaks, such as timing attacks.
-
-### Can These Techniques Apply Elsewhere?
-
-The optimization strategies are broadly applicable:
-
-- **Bit-Interleaving:** Useful for other lightweight ciphers like PRESENT or SIMON, enabling bitsliced implementations on 32-bit platforms ([Bit Twiddling](https://graphics.stanford.edu/~seander/bithacks.html)).
-- **Instruction Scheduling:** Interleaving operations to reduce pipeline stalls can optimize any algorithm with parallelizable computations.
-- **Efficient Data Loading:** Loading larger data chunks benefits algorithms with frequent constant accesses, such as AES or ChaCha.
-
-### What About Power Consumption?
-
-While my experiments focused on execution time, power consumption is critical for IoT devices. Faster execution could reduce energy use by allowing the microcontroller to enter low-power modes sooner. Future work could measure power consumption using tools like the STM32 Power Shield, providing a more holistic view of optimization impacts.
-
-### How Does This Fit into IoT Security?
-
-ASCON’s selection as NIST’s lightweight cryptography standard underscores its importance for IoT security. My optimizations make ASCON faster on STM32 microcontrollers, enabling secure communication in applications like smart homes, wearables, and industrial sensors. This aligns with the growing demand for efficient, secure cryptography in resource-constrained environments.
-
-## Future Research Directions
-
-Your thesis can propose several avenues for further exploration:
-
-- **Testing Across STM32 Variants:** Evaluate the optimized implementation on different STM32 series (e.g., STM32F0 with Cortex-M0 vs. STM32F4 with Cortex-M4) to assess performance variations.
-- **Energy Efficiency:** Measure power consumption to quantify energy savings, critical for battery-powered IoT devices.
-- **Comparison with Other Ciphers:** Benchmark ASCON against other NIST candidates, like Grain-128AEAD, to highlight its advantages on STM32 platforms.
-- **Full Unrolling and DSP Extensions:** Explore loop unrolling or Cortex-M4 DSP instructions to further reduce execution time, as suggested in the optimization notes.
+Unexpectedly, some individual optimizations for Bubble Sort, such as O5, O6, and O7, were ineffective or even increased code size, with O6 resulting in 141,344 bytes compared to the baseline of 141,320 bytes. This highlights the importance of context-specific optimization selection and the potential pitfalls of applying generic techniques without thorough evaluation. These findings suggest that developers must carefully profile and benchmark their code to identify the most effective strategies for their specific use case.
+Looking ahead, several avenues for future research emerge. Investigating the impact of these optimizations on power consumption is particularly relevant for battery-powered embedded systems, where energy efficiency is a critical concern. Additionally, assessing the security implications of optimized cryptographic implementations is essential to ensure that performance enhancements do not compromise security, especially for algorithms like ASCON and GOST used in secure communications. Exploring hardware-specific features, such as SIMD instructions on the Cortex-M4, could yield further performance gains, as suggested by prior research on instruction-level parallelism. Finally, conducting a comprehensive cross-experiment comparison would help generalize these findings and provide a more robust framework for embedded system optimization.
