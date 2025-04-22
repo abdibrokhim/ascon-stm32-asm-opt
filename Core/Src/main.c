@@ -36,53 +36,53 @@ void print(unsigned char c, unsigned char* x, unsigned long long xlen) {
 }
 
 // ASCON test function
-// int ascon_main() {
-//   /* Sample data (key, nonce, associated data, plaintext) */
-//   unsigned char n[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-//                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-//                            22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-//   unsigned char k[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-//                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-//                            22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-//   unsigned char a[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-//                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-//                            22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-//   unsigned char m[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-//                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-//                            22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-//   unsigned char c[32], h[32], t[32];
-//   unsigned long long alen = 16;
-//   unsigned long long mlen = 16;
-//   unsigned long long clen;
-//   int result = 0;
+int ascon_main() {
+  /* Sample data (key, nonce, associated data, plaintext) */
+  unsigned char n[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                           11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                           22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+  unsigned char k[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                           11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                           22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+  unsigned char a[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                           11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                           22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+  unsigned char m[32] = { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
+                           11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                           22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+  unsigned char c[32], h[32], t[32];
+  unsigned long long alen = 16;
+  unsigned long long mlen = 16;
+  unsigned long long clen;
+  int result = 0;
 
-// #if defined(AVR_UART)
-//   avr_uart_init();
-//   stdout = &avr_uart_output;
-//   stdin = &avr_uart_input_echo;
-// #endif
+#if defined(AVR_UART)
+  avr_uart_init();
+  stdout = &avr_uart_output;
+  stdin = &avr_uart_input_echo;
+#endif
 
-//   uint32_t total_time = 0;
-//   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
-//     HAL_Delay(5000);                                          // Wait 5 seconds
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
-//   uint32_t start_time = HAL_GetTick();
-//   for (int i = 0; i < 20000; i++) {
+  uint32_t total_time = 0;
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
+    HAL_Delay(5000);                                          // Wait 5 seconds
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
+  uint32_t start_time = HAL_GetTick();
+  for (int i = 0; i < 20000; i++) {
 
-//       result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, NULL, n, k);
+      result |= crypto_aead_encrypt(c, &clen, m, mlen, a, alen, NULL, n, k);
 
-//   }
-//   uint32_t end_time = HAL_GetTick();
-//         uint32_t elapsed = end_time - start_time;
-//         total_time += elapsed;
+  }
+  uint32_t end_time = HAL_GetTick();
+        uint32_t elapsed = end_time - start_time;
+        total_time += elapsed;
 
-//   /* Turn ON LED on PC13, wait 5 seconds, then turn OFF LED */
-//   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
-//   HAL_Delay(5000+result);                                          // Wait 5 seconds
-//   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
+  /* Turn ON LED on PC13, wait 5 seconds, then turn OFF LED */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);    // LED ON
+  HAL_Delay(5000+result);                                          // Wait 5 seconds
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);  // LED OFF
 
-//   return result;
-// }
+  return result;
+}
 
 /* GOST test function */
 int gost_main() {
