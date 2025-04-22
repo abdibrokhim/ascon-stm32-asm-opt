@@ -3,9 +3,9 @@
 
 ## Abstract
 
-This thesis investigates effective optimization strategies for ARM microcontrollers, focusing specifically on the STM32F103 and STM32F407 Discovery Boards, which are widely used in Internet of Things (IoT) applications. The research comprises three primary experiments: firstly, optimizing a fundamental bubble sort algorithm using both C and assembly, secondly, improving the performance of the ASCON lightweight cryptographic algorithm, and thirdly, enhancing the efficiency of the GOST 28147-89 cryptographic standard.
+This thesis investigates effective optimization strategies for ARM microcontrollers, focusing specifically on the STM32F103 and STM32F407 Discovery Boards, which are widely used in Internet of Things (IoT) applications. The research comprises three primary experiments: firstly, optimizing a fundamental bubble sort algorithm using both C and assembly, secondly, improving the performance of the ASCON AEAD128 lightweight cryptographic algorithm, and thirdly, enhancing the efficiency of the GOST 28147-89 cryptographic standard.
 
-Experimentation revealed significant performance improvements across all three studies. Compiler and code-level optimizations yielded substantial reductions in execution time and memory footprint, demonstrating the tangible benefits of targeted optimizations. In particular, the optimized implementation of ASCON achieved an 11.11% performance improvement, while optimizations of the GOST algorithm nearly halved the execution time, providing approximately 49.13% faster performance than the original.
+Experimentation revealed significant performance improvements across all three studies. Compiler and code-level optimizations yielded substantial reductions in execution time and memory footprint, demonstrating the tangible benefits of targeted optimizations. In particular, the optimized implementation of ASCON AEAD128 achieved an 11.11% performance improvement, while optimizations of the GOST 28147-89 algorithm nearly halved the execution time, providing approximately 49.13% faster performance than the original.
 
 This research confirms that carefully selected compiler flags, inline assembly, and targeted memory management optimizations substantially enhance the efficiency of ARM microcontrollers, making them better suited for resource-constrained IoT environments.
 
@@ -14,11 +14,11 @@ This research confirms that carefully selected compiler flags, inline assembly, 
 
 ### Research Context and Motivation
 
-Embedded systems play a crucial role in modern technological applications, particularly in fields where efficiency and reliability are paramount, such as Internet of Things (IoT) devices, automotive systems, medical equipment, and secure communications. Performance optimization, encompassing execution speed and memory management, is particularly critical for these systems due to their resource-constrained environments. Optimized code ensures not only the efficient operation of embedded devices but also extends battery life, reduces production costs, and enhances user experience through responsive and robust performance.
+Embedded systems play a crucial role in modern technological applications, particularly in fields where efficiency and reliability are paramount, such as Internet of Things (IoT) devices, automotive systems, medical equipment, and secure communications. [1] Performance optimization, encompassing execution speed and memory management, is particularly critical for these systems due to their resource-constrained environments. Optimized code ensures not only the efficient operation of embedded devices but also extends battery life, reduces production costs, and enhances user experience through responsive and robust performance. [2]
 
-Within the wide range of embedded platforms, ARM microcontrollers stand out due to their popularity, energy efficiency, cost-effectiveness, and extensive support from both industry and academia. Specifically, STM32F103 and STM32F407 Discovery Boards have emerged as compelling platforms for optimization research. These boards feature ARM Cortex-M processors, widely employed in various real-world IoT applications, including environmental monitoring sensors, wearable health devices, home automation systems, and security-critical applications requiring lightweight cryptographic implementations.
+Within the wide range of embedded platforms, ARM microcontrollers stand out due to their popularity, energy efficiency, cost-effectiveness, and extensive support from both industry and academia. Specifically, STM32F103 and STM32F407 Discovery Boards have emerged as compelling platforms for optimization research. These boards feature ARM Cortex-M processors, widely employed in various real-world IoT applications, including environmental monitoring sensors, wearable health devices, home automation systems, and security-critical applications requiring lightweight cryptographic implementations. [3, 4]
 
-The continuous expansion of IoT devices and embedded systems, combined with increasing demands for performance, security, and energy efficiency, motivates the exploration of effective optimization strategies. This thesis addresses this critical area by examining and improving code optimization techniques specifically tailored for ARM microcontrollers.
+The continuous expansion of IoT devices and embedded systems, combined with increasing demands for performance, security, and energy efficiency, motivates the exploration of effective optimization strategies. This thesis addresses this critical area by examining and improving code optimization techniques specifically tailored for ARM microcontrollers. [5-8]
 
 ### Objectives and Research Questions
 
@@ -40,13 +40,13 @@ Our research includes three carefully selected optimization experiments, each ta
 
 In our first experiment, we examined a fundamental sorting algorithm—bubble sort—as a baseline case study due to its simplicity and ease of analysis. We implemented the algorithm in both high-level C and low-level assembly language, highlighting practical benefits and trade-offs between manual and compiler-assisted optimization. Then we compared metrics such as execution time and memory footprint, providing insights into the overhead introduced by high-level programming languages and demonstrating the potential performance gains achievable through assembly-level fine-tuning.
 
-2. ASCON AEAD (C & Inline Assembly)
+2. ASCON AEAD128 (C & Inline Assembly)
 
-Our second experiment focused on cryptographic optimization, specifically exploring ASCON, a lightweight authenticated encryption algorithm endorsed by NIST for IoT security applications. Given ASCON's critical role in ensuring data security in low-resource environments, we optimized it to balance robust security and performance constraints. Then we employed inline assembly techniques, pipeline optimizations, and efficient memory access patterns. We analyzed performance metrics like execution time and code size reduction, our results demonstrated clear practical improvements.
+Our second experiment focused on cryptographic optimization, specifically exploring ASCON, a lightweight authenticated encryption algorithm endorsed by NIST for IoT security applications. [9, 10] Given ASCON's critical role in ensuring data security in low-resource environments, we optimized it to balance robust security and performance constraints. Then we employed inline assembly techniques, pipeline optimizations, and efficient memory access patterns. We analyzed performance metrics like execution time and code size reduction, our results demonstrated clear practical improvements.
 
 3. GOST 28147-89 (C & Inline Assembly)
 
-In the third experiment, we optimized GOST 28147-89, a legacy cryptographic standard characterized by significantly different structural complexity compared to modern lightweight algorithms. The algorithm’s distinct S-box structures and extensive computational requirements provided a unique perspective on optimization challenges. We adopted various optimization strategies, including algorithmic restructuring, inline assembly implementation, and memory optimization through precomputed substitution tables. Then we evaluated metrics such as runtime performance gains, memory footprint, and the balance between computational complexity and algorithmic efficiency. Our results demonstrated significant performance improvements, validating the effectiveness of targeted optimizations in complex cryptographic contexts.
+In the third experiment, we optimized GOST 28147-89, a legacy cryptographic standard characterized by significantly different structural complexity compared to modern lightweight algorithms. [11] The algorithm’s distinct S-box structures and extensive computational requirements provided a unique perspective on optimization challenges. We adopted various optimization strategies, including algorithmic restructuring, inline assembly implementation, and memory optimization through precomputed substitution tables. Then we evaluated metrics such as runtime performance gains, memory footprint, and the balance between computational complexity and algorithmic efficiency. Our results demonstrated significant performance improvements, validating the effectiveness of targeted optimizations in complex cryptographic contexts.
 
 Through these experiments, our research provides comprehensive insight into effective optimization strategies, clearly illustrating how strategic code and compiler-level optimizations can significantly enhance performance and efficiency in embedded systems based on ARM microcontrollers.
 
@@ -55,43 +55,43 @@ Through these experiments, our research provides comprehensive insight into effe
 
 ### Performance‑Oriented Programming for Embedded Systems
 
-Performance-oriented programming for embedded systems focuses on developing software optimized explicitly for constrained computational environments typical in embedded processors. Unlike desktop or server processors, which utilize complex features like extensive out-of-order execution units and sophisticated cache hierarchies to extract maximum performance from unoptimized legacy or architecture-agnostic code, embedded processors necessitate deliberate software-level optimization to achieve efficient performance (Yiu, 2014; Furber, 2000). Embedded systems generally have limited resources, including processing power, memory bandwidth, and energy availability, requiring tailored programming techniques to maximize resource utilization (Patterson & Hennessy, 2017).
+Performance-oriented programming for embedded systems focuses on developing software optimized explicitly for constrained computational environments typical in embedded processors. Unlike desktop or server processors, which utilize complex features like extensive out-of-order execution units and sophisticated cache hierarchies to extract maximum performance from unoptimized legacy or architecture-agnostic code, embedded processors necessitate deliberate software-level optimization to achieve efficient performance. [3, 5] Embedded systems generally have limited resources, including processing power, memory bandwidth, and energy availability, requiring tailored programming techniques to maximize resource utilization. [12]
 
 Seminal literature in the field identifies several key performance-tuning techniques frequently employed in embedded-systems programming:
 
-1. **Loop Unrolling:** This technique involves replicating the body of a loop multiple times, reducing the overhead associated with loop control instructions, conditional branching, and indexing. Loop unrolling can significantly improve performance by enabling better scheduling of instructions and facilitating compiler optimizations such as vectorization and pipelining (Wolf, 2012). However, excessive unrolling may cause instruction cache pressure and diminish returns due to instruction fetch bandwidth limitations (Muchnick, 1997).
+1. **Loop Unrolling:** This technique involves replicating the body of a loop multiple times, reducing the overhead associated with loop control instructions, conditional branching, and indexing. Loop unrolling can significantly improve performance by enabling better scheduling of instructions and facilitating compiler optimizations such as vectorization and pipelining. [2] However, excessive unrolling may cause instruction cache pressure and diminish returns due to instruction fetch bandwidth limitations. [13]
 
-2. **Compiler Flags and Optimization Levels:** Compiler-driven optimization strategies play a critical role in embedded systems. Compiler flags such as `-O2`, `-O3`, or specialized flags like `-funroll-loops`, `-ftree-vectorize`, and architecture-specific flags (`-mcpu=cortex-m4`, `-mfpu=fpv4-sp-d16`) allow the compiler to generate machine code specifically tailored to a processor’s architecture and application needs (Sakr, 2020). Empirical studies have demonstrated that judicious selection of compiler optimization flags can yield performance improvements exceeding 30% in compute-intensive embedded applications (Baque et al., 2020).
+2. **Compiler Flags and Optimization Levels:** Compiler-driven optimization strategies play a critical role in embedded systems. Compiler flags such as `-O2`, `-O3`, or specialized flags like `-funroll-loops`, `-ftree-vectorize`, and architecture-specific flags (`-mcpu=cortex-m4`, `-mfpu=fpv4-sp-d16`) allow the compiler to generate machine code specifically tailored to a processor’s architecture and application needs.
 
-3. **Memory Alignment and Access Patterns:** Proper data alignment within memory can dramatically improve memory throughput and reduce access latency. Embedded processors typically enforce strict memory alignment constraints; misaligned memory accesses can incur substantial performance penalties or even generate processor faults (Hennessy & Patterson, 2018). Literature on ARM Cortex-based systems emphasizes aligning data structures and arrays to boundaries (e.g., 32-bit or 64-bit alignment) to leverage efficient burst memory accesses and minimize memory stalls (Yiu, 2014; ARM Holdings, 2020).
+3. **Memory Alignment and Access Patterns:** Proper data alignment within memory can dramatically improve memory throughput and reduce access latency. Embedded processors typically enforce strict memory alignment constraints; misaligned memory accesses can incur substantial performance penalties or even generate processor faults. [12] Literature on ARM Cortex-based systems emphasizes aligning data structures and arrays to boundaries (e.g., 32-bit or 64-bit alignment) to leverage efficient burst memory accesses and minimize memory stalls. [3, 14]
 
-4. **Instruction-Level Parallelism (ILP) and SIMD:** Embedded processors such as ARM Cortex-M4 offer specialized Single Instruction, Multiple Data (SIMD) extensions, such as ARM’s NEON technology. Exploiting SIMD instructions allows parallel execution of arithmetic operations on multiple data elements, enhancing computational throughput, particularly in digital signal processing and multimedia applications (ARM Holdings, 2020; Gavrielov et al., 2019). However, effective use of SIMD typically necessitates explicit programmer intervention through intrinsics or inline assembly due to limitations in compiler auto-vectorization capabilities (Yiu, 2014).
+4. **Instruction-Level Parallelism (ILP) and SIMD:** Embedded processors such as ARM Cortex-M4 offer specialized Single Instruction, Multiple Data (SIMD) extensions, such as ARM’s NEON technology. Exploiting SIMD instructions allows parallel execution of arithmetic operations on multiple data elements, enhancing computational throughput, particularly in digital signal processing and multimedia applications. [14] However, effective use of SIMD typically necessitates explicit programmer intervention through intrinsics or inline assembly due to limitations in compiler auto-vectorization capabilities. [3]
 
-While these techniques can significantly improve the performance of compute-bound tasks, it is crucial to recognize the distinction between compute-bound and I/O-bound applications. Compute-bound tasks, such as video encoding, benefit substantially from these optimization strategies, whereas I/O-bound tasks typically do not, since their performance is dominated by peripheral or communication latency rather than processor or memory efficiency (Wolf, 2012).
+While these techniques can significantly improve the performance of compute-bound tasks, it is crucial to recognize the distinction between compute-bound and I/O-bound applications. Compute-bound tasks, such as video encoding, benefit substantially from these optimization strategies, whereas I/O-bound tasks typically do not, since their performance is dominated by peripheral or communication latency rather than processor or memory efficiency. [2]
 
-Thus, the emphasis on performance-oriented programming in embedded systems is justified by the substantial gap in performance achievable by optimized versus non-optimized code, particularly in computation-intensive domains such as digital signal processing, cryptographic operations, and control algorithms (Hennessy & Patterson, 2018).
+Thus, the emphasis on performance-oriented programming in embedded systems is justified by the substantial gap in performance achievable by optimized versus non-optimized code, particularly in computation-intensive domains such as digital signal processing, cryptographic operations, and control algorithms. [12]
 
 ### ARM Architecture and STM32F1/F4 Series Features
 
-ARM (Advanced RISC Machine) architectures have profoundly influenced embedded system design by introducing Reduced Instruction Set Computing (RISC) principles to achieve superior performance and efficiency in resource-constrained environments. ARM architectures have evolved through various generations, notably ARMv6 and ARMv7, each iteration introducing incremental enhancements designed to optimize performance and power efficiency (Furber, 2000; ARM Holdings, 2020).
+ARM (Advanced RISC Machine) architectures have profoundly influenced embedded system design by introducing Reduced Instruction Set Computing (RISC) principles to achieve superior performance and efficiency in resource-constrained environments. ARM architectures have evolved through various generations, notably ARMv6 and ARMv7, each iteration introducing incremental enhancements designed to optimize performance and power efficiency. [5, 14]
 
-ARM architectures emphasize simplicity and efficiency through load-store instruction paradigms, where arithmetic instructions only operate on register operands, necessitating explicit memory load/store instructions (ARM Holdings, 2020). ARMv6 introduced notable advancements in instruction pipeline optimization, improved branch prediction, and basic DSP-oriented instructions. ARMv7 further augmented these capabilities with enhanced SIMD instructions via the NEON extension, significantly boosting performance for multimedia and digital signal processing tasks (ARM Holdings, 2020; Yiu, 2014).
+ARM architectures emphasize simplicity and efficiency through load-store instruction paradigms, where arithmetic instructions only operate on register operands, necessitating explicit memory load/store instructions. [14] ARMv6 introduced notable advancements in instruction pipeline optimization, improved branch prediction, and basic DSP-oriented instructions. ARMv7 further augmented these capabilities with enhanced SIMD instructions via the NEON extension, significantly boosting performance for multimedia and digital signal processing tasks. [5, 14]
 
-Comparative analyses indicate that ARMv7-based processors exhibit substantial improvements in instruction throughput, particularly for applications exploiting parallel data processing, where NEON instructions can improve arithmetic operation efficiency by a factor of four to eight compared to scalar operations (Gavrielov et al., 2019).
+Comparative analyses indicate that ARMv7-based processors exhibit substantial improvements in instruction throughput, particularly for applications exploiting parallel data processing, where NEON instructions can improve arithmetic operation efficiency by a factor of four to eight compared to scalar operations.
 
 #### STM32F1 and STM32F4 Series Microarchitectural Features
 
-STMicroelectronics’ STM32 microcontroller families, particularly the STM32F1 and STM32F4 series, exemplify the application of ARM architectures in high-performance embedded applications. The STM32F1 series, based on the ARM Cortex-M3 core, delivers a straightforward and cost-effective platform with clock speeds up to 72 MHz and integrated peripherals such as CAN, USB, and Ethernet MAC interfaces (STMicroelectronics, 2021). The relatively simple three-stage pipeline of the Cortex-M3 allows predictable execution timing suitable for deterministic, real-time embedded control systems.
+STMicroelectronics’ STM32 microcontroller families, particularly the STM32F1 and STM32F4 series, exemplify the application of ARM architectures in high-performance embedded applications. The STM32F1 series, based on the ARM Cortex-M3 core, delivers a straightforward and cost-effective platform with clock speeds up to 72 MHz and integrated peripherals such as CAN, USB, and Ethernet MAC interfaces. [4] The relatively simple three-stage pipeline of the Cortex-M3 allows predictable execution timing suitable for deterministic, real-time embedded control systems.
 
-In contrast, the STM32F4 series, employing the ARM Cortex-M4 core, significantly advances computational capabilities by integrating digital signal processing (DSP) instructions, hardware floating-point units (FPU), and advanced microarchitectural enhancements (STMicroelectronics, 2021). Key features of the STM32F4 family include:
+In contrast, the STM32F4 series, employing the ARM Cortex-M4 core, significantly advances computational capabilities by integrating digital signal processing (DSP) instructions, hardware floating-point units (FPU), and advanced microarchitectural enhancements. [4] Key features of the STM32F4 family include:
 
-- **Advanced Pipeline and Caches:** The Cortex-M4’s pipeline improvements and the Adaptive Real-Time (ART) Accelerator™ enable instruction execution at frequencies up to 180 MHz, achieving up to 225 DMIPS (STMicroelectronics, 2021). The inclusion of instruction and data caches significantly reduces memory access latency, providing substantial performance improvements for compute-intensive applications.
+- **Advanced Pipeline and Caches:** The Cortex-M4’s pipeline improvements and the Adaptive Real-Time (ART) Accelerator™ enable instruction execution at frequencies up to 180 MHz, achieving up to 225 DMIPS. [4] The inclusion of instruction and data caches significantly reduces memory access latency, providing substantial performance improvements for compute-intensive applications.
 
-- **Floating-Point and DSP Instructions:** Integrated hardware floating-point units substantially accelerate mathematical computations common in signal processing, control algorithms, and graphical applications, potentially delivering a threefold performance gain over software floating-point emulation (ARM Holdings, 2020; STMicroelectronics, 2021).
+- **Floating-Point and DSP Instructions:** Integrated hardware floating-point units substantially accelerate mathematical computations common in signal processing, control algorithms, and graphical applications, potentially delivering a threefold performance gain over software floating-point emulation. [4, 14]
 
-- **Dynamic Power Scaling:** Power efficiency enhancements, such as dynamic frequency scaling and peripheral clock gating, enable optimized energy consumption, critical for battery-operated or energy-constrained embedded systems. Comparative studies highlight a significant performance-to-power efficiency advantage in STM32F4 over STM32F1 devices (Baque et al., 2020).
+- **Dynamic Power Scaling:** Power efficiency enhancements, such as dynamic frequency scaling and peripheral clock gating, enable optimized energy consumption, critical for battery-operated or energy-constrained embedded systems.
 
-- **Rich Peripheral Integration:** The STM32F4 microcontrollers integrate diverse communication interfaces (e.g., Quad-SPI, Ethernet, USB OTG), high-density memory options, and enhanced security peripherals, expanding their suitability for advanced embedded applications requiring robust connectivity, multimedia support, and secure data handling (STMicroelectronics, 2021).
+- **Rich Peripheral Integration:** The STM32F4 microcontrollers integrate diverse communication interfaces (e.g., Quad-SPI, Ethernet, USB OTG), high-density memory options, and enhanced security peripherals, expanding their suitability for advanced embedded applications requiring robust connectivity, multimedia support, and secure data handling. [4]
 
 In summary, the STM32F4 series' architectural improvements over the STM32F1 reflect ARM’s evolutionary approach toward enhanced computational performance and power efficiency, addressing the growing demand for sophisticated functionalities within embedded applications. These microarchitectural and instruction-set advancements demonstrate the critical interplay between hardware enhancements and software optimization strategies, underscoring the importance of both architectural features and optimized software practices for achieving maximal embedded-system performance.
 
@@ -283,7 +283,7 @@ Verification successful: both implementations produce identical results
 
 Interestingly, our assembly implementation is actually slower than the C version. This is likely because the compiler is able to produce highly optimized code with -O3 for the C version. Let's improve our assembly implementation. (refer to Methods section for more details)
 
-> Full code implementation? Refer to Appendix X
+> Full code implementation? Refer to Appendix A, B and E
 
 ### Baseline Implementation of ASCON-AEAD128
 
@@ -482,7 +482,7 @@ Table: ASCON-AEAD128 Parameters
 | Encryption Rounds | 8 | Permutation rounds per block |
 | Finalization Rounds | 12 | Permutation rounds for tag generation |
 
-> Full code implementation? Refer to Appendix A
+> Full code implementation? Refer to Appendix F
 
 
 ### GOST 28147-89: Encryption, Decryption, and Message Authentication Code Algorithms
@@ -610,7 +610,7 @@ This MAC mechanism is designed to detect any modification of the message blocks.
 
 One subtlety: Because only 16 rounds (instead of the full 32) are used per block mixing, there might be theoretical concerns about whether this truncated encryption is a pseudo-random permutation on each step. However, since the final output is subjected to a full 32-round encryption (16 rounds in the last chaining step plus 16 in the final output stage, effectively 32 on the last block), and earlier truncated encryptions are concealed by subsequent XORs, no practical weaknesses in the MAC procedure have been published. The GOST MAC is conceptually similar to well-known MAC constructions like CBC-MAC; its security rests on the difficulty of forging outputs without knowing the key.
 
-> Full code implementation? Refer to Appendix X
+> Full code implementation? Refer to Appendix G
 
 
 ## Methods
@@ -760,7 +760,7 @@ Results:
 C bubble sort time: 1.366740 seconds
 ```
 
-> Full code implementation? Refer to Appendix X.
+> Full code implementation? Refer to Appendix D.
 
 #### Assembly‑Level Optimizations  
 
@@ -830,7 +830,7 @@ Performance improvement: 2.994142%
 Verification successful: both implementations produce identical results
 ```
 
-> Full code implementation? Refer to Appendix X.
+> Full code implementation? Refer to Appendix C.
 
 Our optimized assembly code is now slightly faster than the C version. Here's what we did:
 
@@ -892,7 +892,7 @@ int ascon_main() {
 }
 ```
 
-> Full code implementation? Refer to Appendix X.
+> Full code implementation? Refer to Appendix H.
 
 The results, summarized in Table X, show the execution times for various ASCON implementations, with the optimized version achieving significant improvements.
 
@@ -944,6 +944,8 @@ forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C, const uint8_t* E
 }
 ```
 
+> Full code implementation? Refer to Appendix L.
+
 **Optimized ROUND_LOOP() (Version 4):**
 
 file: round.h
@@ -976,7 +978,7 @@ forceinline void ROUND_LOOP(ascon_state_t* s, const uint8_t* C, const uint8_t* E
 }
 ```
 
-> Full code implementation? Refer to Appendix X.
+> Full code implementation? Refer to Appendix M.
 
 Bit-interleaving reorganizes the state’s bits so that multiple S-box operations, which are 5-bit transformations in ASCON, can be computed in parallel using 32-bit instructions. This is particularly effective on 32-bit processors like the Cortex-M4, where word-level operations are faster than bit-level manipulations. For example, a single XOR on a 32-bit word can process 32 bits simultaneously, reducing the instruction count for the substitution layer. This technique, detailed in the ASCON specification ([ASCON v1.2](https://ascon.isec.tugraz.at/files/asconv12-nist.pdf)), is a cornerstone of version [4] and the optimized version, making ASCON more efficient for IoT devices.
 
@@ -1019,7 +1021,7 @@ result = Table[(result & 0xff)] |
     (Table[768 + ((result >> 24) & 0xff)] << 24);
 ```
 
-> Full code implementation? Refer to Appendix X
+> Full code implementation? Refer to Appendix N.
 
 #### Loop Unrolling
 
@@ -1053,7 +1055,7 @@ tmp = *n1;
 // Repeated for each round
 ```
 
-> Full code implementation? Refer to Appendix X
+> Full code implementation? Refer to Appendix O.
 
 #### Data Handling
 
@@ -1078,7 +1080,7 @@ Optimized (`GOST_Encrypt_SR_Opt`):
 Temp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(((uint32_t *)(Data + n * 8))[0]);
 ```
 
-> Full code implementation? Refer to Appendix X
+> Full code implementation? Refer to Appendix O.
 
 
 ## Results
@@ -1199,39 +1201,43 @@ These findings have significant implications for developers working on embedded 
 
 ## References
 
-- Arm® Architecture Reference Manual Supplement Armv8, for Armv8-R Aarch64 Architecture Profile: https://docslib.org/doc/8074954/arm%C2%AE-architecture-reference-manual-supplement-armv8-for-armv8-r-aarch64-architecture-profile.
-- Baque, A., et al. (2020). "Compiler Optimizations for ARM Cortex-M Processors." _Journal of Embedded Systems Optimization_, 4(2), 47–59.  
-- Furber, S. B. (2000). _ARM System-on-Chip Architecture (2nd Edition)_. Addison-Wesley.  
-- Gavrielov, Y., et al. (2019). "SIMD Optimization on ARM Cortex-M." _IEEE Embedded Systems Letters_, 11(3), 98–101.  
-[-] Patterson, D., & Hennessy, J. L. (2022). Rechnerorganisation und Rechnerentwurf: Die Hardware/Software-Schnittstelle-MIPS Edition. Walter de Gruyter GmbH & Co KG.
-[-] Muchnick, S. (1997). Advanced compiler design implementation. Morgan kaufmann.
-[-] STMicroelectronics, STM32F1/F4 Series Reference Manuals: https://www.st.com/en/microcontrollers-microprocessors/stm32f4-series/documentation.html, https://www.st.com/en/microcontrollers-microprocessors/stm32f1-series/documentation.html.
-[-] Wolf, M. (2012). Computers as components: principles of embedded computing system design. Elsevier.
-[-] Yiu, J. (2015). The definitive guide to ARM® Cortex®-M0 and Cortex-M0+ processors. Academic Press.
-[-] Meltem Sönmez Turan, Kerry A. McKay, Donghoon Chang, Jinkeon Kang, John Kelsey (2024) Ascon-Based Lightweight Cryptography Standards for Constrained Devices. (National Institute of Standards and Technology, Gaithersburg, MD),NIST Special Publication (SP) NIST SP 800-232 ipd. https://doi.org/10.6028/NIST.SP.800-232.ipd
+[1] Lee, I., & Lee, K. (2015). The Internet of Things (IoT): Applications, investments, and challenges for enterprises. Business horizons, 58(4), 431-440.
+[2] Wolf, M. (2012). Computers as components: principles of embedded computing system design. Elsevier.
+[3] Yiu, J. (2015). The definitive guide to ARM® Cortex®-M0 and Cortex-M0+ processors. Academic Press.
+[4] STMicroelectronics, STM32F1/F4 Series Reference Manuals: https://www.st.com/en/microcontrollers-microprocessors/stm32f4-series/documentation.html, https://www.st.com/en/microcontrollers-microprocessors/stm32f1-series/documentation.html.
+[5] Furber, S. B. (2000). ARM system-on-chip architecture. pearson Education.
+[6] Ganssle, J. (2008). The art of designing embedded systems. Newnes.
+[7] Roman, R., Zhou, J., & Lopez, J. (2013). On the features and challenges of security and privacy in distributed internet of things. Computer networks, 57(10), 2266-2279.
+[8] McGrew, D., & Viega, J. (2004). The Galois/counter mode of operation (GCM). submission to NIST Modes of Operation Process, 20, 0278-0070.
+[9] ASCON v1.2 Specification Document: https://ascon.isec.tugraz.at/files/asconv12-nist.pdf
+[10] Meltem Sönmez Turan, Kerry A. McKay, Donghoon Chang, Jinkeon Kang, John Kelsey (2024) Ascon-Based Lightweight Cryptography Standards for Constrained Devices. (National Institute of Standards and Technology, Gaithersburg, MD),NIST Special Publication (SP) NIST SP 800-232 ipd. https://doi.org/10.6028/NIST.SP.800-232.ipd
+[11] GOST (block cipher) - Wikipedia: https://en.wikipedia.org/wiki/GOST_(block_cipher)
+[12] Patterson, D., & Hennessy, J. L. (2022). Rechnerorganisation und Rechnerentwurf: Die Hardware/Software-Schnittstelle-MIPS Edition. Walter de Gruyter GmbH & Co KG.
+[13] Muchnick, S. (1997). Advanced compiler design implementation. Morgan kaufmann.
+[14] Arm® Architecture Reference Manual Supplement Armv8, for Armv8-R Aarch64 Architecture Profile: https://docslib.org/doc/8074954/arm%C2%AE-architecture-reference-manual-supplement-armv8-for-armv8-r-aarch64-architecture-profile.
+
+
+
+[11] Efficient ASCON Implementations Review: https://www.scitepress.org/PublishedPapers/2016/56899/pdf/index.html
+[12] ASCON C Implementation Repository: https://github.com/ascon/ascon-c
+
+[14] GOST 28147-89 Verilog Implementation: https://github.com/iDoka/GOST-28147-89
+[15] GOST 28147-89 OpenCores Project: https://opencores.org/projects/gost28147
+[16] GOST 28147-89 Encryption Guide: https://cyberw1ng.medium.com/gost-28147-89-encryption-a-guide-to-understanding-its-mechanics-and-benefits-2023-a208ac44c57c
+[17] RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms: https://datatracker.ietf.org/doc/html/rfc5830
+[18] Security Evaluation of GOST 28147-89: https://www.researchgate.net/publication/220615751_Security_Evaluation_of_GOST_28147-89_in_View_of_International_Standardisation
+
+
 [-] ARM Programming and Optimization: https://lira.epac.to/DOCS-TECH/Programming/Mobile%20and%20Embedded/Embedded/Embedded%20Systems%20-%20ARM%20Programming%20and%20Optimization.pdf
-- RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms: https://datatracker.ietf.org/doc/html/rfc5830
-- GOST (block cipher) - Wikipedia: https://en.wikipedia.org/wiki/GOST_(block_cipher)
-- ASCON v1.2 Specification Document: https://ascon.isec.tugraz.at/files/asconv12-nist.pdf
-- Efficient ASCON Implementations Review: https://www.scitepress.org/PublishedPapers/2016/56899/pdf/index.html
-- ECRYPT II Vampire Project: https://hyperelliptic.org/ECRYPTII/vampire/
-- ASCON C Implementation Repository: https://github.com/ascon/ascon-c
-- Journal of Cryptology: Ascon v1.2 Analysis: https://link.springer.com/article/10.1007/s00145-021-09398-7
-- Bit Twiddling Hacks for Optimization: https://graphics.stanford.edu/~seander/bithacks.html
-- NIST Lightweight Cryptography Project: https://csrc.nist.gov/projects/lightweight-cryptography
-- STM32F4 Series Microcontrollers: https://www.st.com/en/microcontrollers-microprocessors/stm32f4-series.html
-- Optimizing Block Ciphers with SIMD: https://www.sciencedirect.com/science/article/abs/pii/S2214212622001788
-- Precomputed Tables Trade-offs: https://stackoverflow.com/questions/74238517/computing-data-on-the-fly-vs-pre-computed-table
-- GOST 28147-89 Verilog Implementation: https://github.com/iDoka/GOST-28147-89
-- GOST 28147-89 OpenCores Project: https://opencores.org/projects/gost28147
-- Security Evaluation of GOST 28147-89: https://www.researchgate.net/publication/220615751_Security_Evaluation_of_GOST_28147-89_in_View_of_International_Standardisation
-- CycloneCRYPTO for STM32: https://www.st.com/en/partner-products-and-services/cyclonecrypto.html
-- Blowfish Cipher Design: https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
-- EC Precomputed Tables Discussion: https://www.reddit.com/r/cryptography/comments/1bwbwm1/ec_precomputed_tables/
-- STM32 Memory Layout: https://en.wikipedia.org/wiki/STM32
-- GOST 28147-89 Encryption Guide: https://cyberw1ng.medium.com/gost-28147-89-encryption-a-guide-to-understanding-its-mechanics-and-benefits-2023-a208ac44c57c
-- STM32WB Cryptographic Performance: https://wiki.st.com/stm32mcu/wiki/Security:STM32WB_Series:_Cryptographic_Library_Performance
-- Determining STM32 Flash Usage: https://electronics.stackexchange.com/questions/363931/how-do-i-find-out-at-compile-time-how-much-of-an-stm32s-flash-memory-and-dynami
+
+[-] Bit Twiddling Hacks for Optimization: https://graphics.stanford.edu/~seander/bithacks.html
+[-] Optimizing Block Ciphers with SIMD: https://www.sciencedirect.com/science/article/abs/pii/S2214212622001788
+
+
+[-] Blowfish Cipher Design: https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html
+
+[-] Precomputed Tables Trade-offs: https://stackoverflow.com/questions/74238517/computing-data-on-the-fly-vs-pre-computed-table
+[-] EC Precomputed Tables Discussion: https://www.reddit.com/r/cryptography/comments/1bwbwm1/ec_precomputed_tables/
 
 
 
@@ -1464,6 +1470,11 @@ Run the code:
 
 ```bash
 gcc -O3 driver.c bubble_sort.c bubble_sort_asm.s -o bubble_sort_benchmark && ./bubble_sort_benchmark
+```
+
+Output:
+
+```bash
 C bubble sort time: 1.016151 seconds
 Assembly bubble sort time: 0.985726 seconds
 Performance improvement: 2.994142%
@@ -1616,6 +1627,11 @@ Run the code:
 
 ```bash
 gcc -O3 ascon_aead128_basic_impl.c -o ascon_aead128_basic_impl && ./ascon_aead128_basic_impl
+```
+
+Output:
+
+```bash
 === State at Start ===
 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000
 Ciphertext: 80400c0600000000 0000000000000000
@@ -1803,6 +1819,11 @@ Run the code:
 
 ```bash
 gcc -O3 gost-basic-impl.c -o gost-basic-impl && ./gost-basic-impl
+```
+
+Output:
+
+```bash
 Plain: 12345678
 Cipher: B1300CE5FC9C6C06
 Decrypted: 12345678
