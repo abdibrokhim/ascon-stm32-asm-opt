@@ -9,6 +9,8 @@ Experimentation revealed significant performance improvements across all three s
 
 This research confirms that carefully selected compiler flags, inline assembly, and targeted memory management optimizations substantially enhance the efficiency of ARM microcontrollers, making them better suited for resource-constrained IoT environments.
 
+Keywords: Embedded Systems, Code Optimization, ARM Microcontrollers, Memory Footprint, Execution Time, Cryptographic Algorithms
+
 
 ## Introduction
 
@@ -1218,8 +1220,6 @@ These findings have significant implications for developers working on embedded 
 [18] Security Evaluation of GOST 28147-89: https://www.researchgate.net/publication/220615751_Security_Evaluation_of_GOST_28147-89_in_View_of_International_Standardisation
 [19] Precomputed Tables Trade-offs: https://stackoverflow.com/questions/74238517/computing-data-on-the-fly-vs-pre-computed-table
 [20] Optimizing Block Ciphers with SIMD: https://www.sciencedirect.com/science/article/abs/pii/S2214212622001788
-[22] ARM Programming and Optimization: https://lira.epac.to/DOCS-TECH/Programming/Mobile%20and%20Embedded/Embedded/Embedded%20Systems%20-%20ARM%20Programming%20and%20Optimization.pdf
-
 
 
 ## Appendices
