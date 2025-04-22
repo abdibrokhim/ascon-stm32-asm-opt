@@ -31,3 +31,11 @@ The information presented is based on the official GOST 28147-89 specification (
                 RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms
             
         ](https://datatracker.ietf.org/doc/html/rfc5830#:~:text=A%20substitution%20box%20%28S,bit%20vector%20by%20a)), and published cryptanalysis results ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)#:~:text=even%20been%20called%20,11)), as well as updates from the 2015 revision of the standard ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)#:~:text=GOST%20R%2034.12,bit%20block%20cipher%20called%20Kuznyechik)).
+
+- [ASCON v1.2 Specification Document](https://ascon.isec.tugraz.at/files/asconv12-nist.pdf)
+- [Efficient ASCON Implementations Review](https://www.scitepress.org/PublishedPapers/2016/56899/pdf/index.html)
+- [ECRYPT II Vampire Project](https://hyperelliptic.org/ECRYPTII/vampire/)
+- [ASCON C Implementation Repository](https://github.com/ascon/ascon-c)
+- [Journal of Cryptology: Ascon v1.2 Analysis](https://link.springer.com/article/10.1007/s00145-021-09398-7)
+- [Bit Twiddling Hacks for Optimization](https://graphics.stanford.edu/~seander/bithacks.html)
+- [NIST Lightweight Cryptography Project](https://csrc.nist.gov/projects/lightweight-cryptography)

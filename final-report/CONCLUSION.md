@@ -21,3 +21,4 @@ en.wikipedia.org
 , as well as updates from the 2015 revision of the standard​
 en.wikipedia.org
 .
+By optimizing ASCON for STM32 microcontrollers, I achieved a 39.6% speedup over the original size-optimized implementation, making it more suitable for IoT applications. The changes—efficient constant loading, interleaved operations, and bit-interleaving—demonstrate how architecture-specific tuning can enhance cryptographic performance without compromising security. These findings offer practical guidelines for developers and highlight the importance of tailoring algorithms to hardware constraints, paving the way for faster, more secure IoT systems.
