@@ -39,3 +39,19 @@ The information presented is based on the official GOST 28147-89 specification (
 - [Journal of Cryptology: Ascon v1.2 Analysis](https://link.springer.com/article/10.1007/s00145-021-09398-7)
 - [Bit Twiddling Hacks for Optimization](https://graphics.stanford.edu/~seander/bithacks.html)
 - [NIST Lightweight Cryptography Project](https://csrc.nist.gov/projects/lightweight-cryptography)
+
+- [STM32F4 Series Microcontrollers](https://www.st.com/en/microcontrollers-microprocessors/stm32f4-series.html): Official STM32F4 series product page detailing specifications.
+- [Optimizing Block Ciphers with SIMD](https://www.sciencedirect.com/science/article/abs/pii/S2214212622001788): Article on high-throughput block cipher implementations.
+- [Precomputed Tables Trade-offs](https://stackoverflow.com/questions/74238517/computing-data-on-the-fly-vs-pre-computed-table): Stack Overflow discussion on precomputed tables vs. on-the-fly computation.
+- [GOST 28147-89 Verilog Implementation](https://github.com/iDoka/GOST-28147-89): GitHub repository for GOST hardware implementation.
+- [GOST 28147-89 OpenCores Project](https://opencores.org/projects/gost28147): OpenCores project page for GOST implementation.
+- [Security Evaluation of GOST 28147-89](https://www.researchgate.net/publication/220615751_Security_Evaluation_of_GOST_28147-89_in_View_of_International_Standardisation): ResearchGate paper on GOST security.
+- [GOST 28147-89 RFC 5830](https://datatracker.ietf.org/doc/html/rfc5830): RFC detailing GOST encryption and MAC algorithms.
+- [CycloneCRYPTO for STM32](https://www.st.com/en/partner-products-and-services/cyclonecrypto.html): Cryptographic toolkit for STM32 with hardware acceleration.
+- [Blowfish Cipher Design](https://www.schneier.com/academic/archives/1994/09/description_of_a_new.html): Schneier’s paper on Blowfish, discussing precomputed subkeys.
+- [EC Precomputed Tables Discussion](https://www.reddit.com/r/cryptography/comments/1bwbwm1/ec_precomputed_tables/): Reddit thread on precomputed tables in elliptic curve cryptography.
+- [STM32 Memory Layout](https://en.wikipedia.org/wiki/STM32): Wikipedia page on STM32 microcontroller specifications.
+- [GOST 28147-89 Encryption Guide](https://cyberw1ng.medium.com/gost-28147-89-encryption-a-guide-to-understanding-its-mechanics-and-benefits-2023-a208ac44c57c): Medium article on GOST mechanics and benefits.
+- [STM32WB Cryptographic Performance](https://wiki.st.com/stm32mcu/wiki/Security:STM32WB_Series:_Cryptographic_Library_Performance): STM32 wiki on cryptographic library performance.
+- [Determining STM32 Flash Usage](https://electronics.stackexchange.com/questions/363931/how-do-i-find-out-at-compile-time-how-much-of-an-stm32s-flash-memory-and-dynami): Electronics Stack Exchange on STM32 memory usage.
+

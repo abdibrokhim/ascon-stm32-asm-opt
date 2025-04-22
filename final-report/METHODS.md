@@ -4,15 +4,16 @@
 
 ### Experimental Platform
 
-To evaluate the performance of optimizations applied to the ASCON algorithm, a lightweight cryptographic algorithm designed for resource-constrained devices, two widely adopted development boards from the STM32 family were chosen: the STM32F103 and STM32F407 Discovery Boards. These boards are popular in the realms of IoT and embedded systems development due to their cost-effectiveness, flexibility, and strong community backing. The STM32F103 is equipped with an ARM Cortex-M3 core, a 32-bit RISC processor that strikes a balance between performance and power efficiency, running at a maximum clock speed of 72 MHz. It comes with 64 KB of flash memory and 20 KB of SRAM, making it well-suited for applications where resources are limited yet computational reliability remains essential. In contrast, the STM32F407 features the more advanced ARM Cortex-M4 core, capable of operating at up to 168 MHz, with significantly larger memory resources—1 MB of flash and 192 KB of SRAM. The Cortex-M4 also includes a Floating Point Unit (FPU) and Digital Signal Processing (DSP) instructions, enhancing its ability to handle more computationally intensive tasks. By testing the ASCON optimizations on both boards, the evaluation could explore how these enhancements perform across a range of hardware capabilities, ensuring their applicability to diverse microcontroller environments within the STM32 family.
+To evaluate the performance of software implementations on embedded systems, two widely adopted development boards from the STM32 family were chosen: the STM32F103 and STM32F407 Discovery Boards. These boards are popular in the realms of IoT and embedded systems development due to their cost-effectiveness, flexibility, and strong community backing. The STM32F103 is equipped with an ARM Cortex-M3 core, a 32-bit RISC processor that strikes a balance between performance and power efficiency, running at a maximum clock speed of 72 MHz. It comes with 64 KB of flash memory and 20 KB of SRAM, making it well-suited for applications where resources are limited yet computational reliability remains essential. In contrast, the STM32F407 features the more advanced ARM Cortex-M4 core, capable of operating at up to 168 MHz, with significantly larger memory resources 1 MB of flash and 192 KB of SRAM. The Cortex-M4 also includes a Floating Point Unit (FPU) and Digital Signal Processing (DSP) instructions, enhancing its ability to handle more computationally intensive tasks. By testing the software implementations on both boards, the evaluation could explore how these implementations perform across a range of hardware capabilities, ensuring their applicability to diverse microcontroller environments within the STM32 family.
 
 #### Hardware: STM32F103 & STM32F407 Discovery Boards
 
-The selection of the STM32F103 and STM32F407 Discovery Boards was deliberate and driven by several practical considerations. Both boards come with the ST-LINK/V2, an integrated in-circuit debugger and programmer, which simplifies the process of uploading code and debugging, while also enabling precise measurement of execution times. This was a critical feature for ensuring the accuracy of performance assessments without external variables skewing the results. The STM32F103, with its Cortex-M3 core, serves as a benchmark for performance in resource-constrained scenarios, such as low-power IoT devices. Meanwhile, the STM32F407, powered by the Cortex-M4, offers a higher-performance platform to test the optimizations under more demanding conditions. Although the experiment did not directly leverage the boards’ additional peripherals—like GPIO pins, timers, or communication interfaces—these features highlight their versatility for real-world IoT applications. Testing across these two platforms ensures that the optimizations are not tailored to a single hardware profile but are instead robust and effective across a spectrum of computational capacities, from basic to advanced, which is vital for the varied requirements of IoT deployments.
+The selection of the STM32F103 and STM32F407 Discovery Boards was deliberate and driven by several practical considerations. Both boards come with the ST-LINK/V2, an integrated in-circuit debugger and programmer, which simplifies the process of uploading code and debugging, while also enabling precise measurement of execution times. This was a critical feature for ensuring the accuracy of performance assessments without external variables skewing the results. The STM32F103, with its Cortex-M3 core, serves as a benchmark for performance in resource-constrained scenarios, such as low-power IoT devices. Meanwhile, the STM32F407, powered by the Cortex-M4, offers a higher-performance platform to test the implementations under more demanding conditions. Although the experiment did not directly leverage the boards’ additional peripherals like GPIO pins, timers, or communication interfaces these features highlight their versatility for real-world IoT applications. Testing across these two platforms ensures that the implementations are not tailored to a single hardware profile but are instead robust and effective across a spectrum of computational capacities, from basic to advanced, which is vital for the varied requirements of IoT deployments.
 
 #### Toolchain and Measurement Setup
 
-For developing and testing the ASCON implementations, the STM32CubeIDE—an integrated development environment from STMicroelectronics—was employed. This toolchain incorporates the GNU Arm Embedded Toolchain, enabling efficient compilation of C and assembly code, and integrates seamlessly with the ST-LINK/V2 for debugging. To maximize performance, the code was compiled with the `-O3` optimization flag, which activates advanced compiler optimizations such as loop unrolling and function inlining—techniques particularly beneficial for cryptographic applications where speed is paramount. Execution time was measured using the SysTick timer, a 24-bit system timer inherent to ARM Cortex-M microcontrollers, offering microsecond-level precision. The test methodology involved executing the `crypto_aead_encrypt` function 20,000 times, encrypting a 16-byte plaintext using a 16-byte key, nonce, and associated data, and recording the cumulative time. This rigorous and repeatable setup ensured consistent and reliable results, providing a solid basis for comparing the performance of the original ASCON implementation against its optimized counterpart across the two hardware platforms.
+For developing and testing the implementations, the STM32CubeIDE an integrated development environment from STMicroelectronics was employed. This toolchain incorporates the GNU Arm Embedded Toolchain, enabling efficient compilation of C and assembly code, and integrates seamlessly with the ST-LINK/V2 for debugging. To maximize performance, the code was compiled with the `-O3` optimization flag, which activates advanced compiler optimizations such as loop unrolling and function inlining—techniques particularly beneficial for applications where speed is paramount. Execution time was measured using the SysTick timer, a 24-bit system timer inherent to ARM Cortex-M microcontrollers, offering microsecond-level precision. The test methodology involved executing a computationally intensive function 20,000 times, processing a fixed amount of data, and recording the cumulative time. This rigorous and repeatable setup ensured consistent and reliable results, providing a solid basis for comparing the performance of different implementations across the two hardware platforms.
+
 
 
 ### Optimization Framework  
@@ -103,7 +104,7 @@ void bubble_sort_optimized(int * restrict data, int n) {
         int limit = n - i - 1;
         int j = 0;
 
-        // Unroll inner loop by 4 iterations to reduce loop overhead
+        // Unroll inner loop by 4 iterations to reduce loop overhead`
         for (; j + 4 <= limit; j += 4) {
             if (data[j] > data[j + 1]) {
                 int tmp = data[j]; data[j] = data[j + 1]; data[j + 1] = tmp; swapped = true;
@@ -381,8 +382,71 @@ Collectively, these optimizations directly respond to the computational requirem
 
 ### GOST 28147‑89 Optimization  
 
-#### Baseline C & Inline‑Assembly Code
+In this section, we provide a comprehensive analysis of the optimizations made to the GOST 28147-89 cryptographic algorithm for STM32 microcontrollers and IoT applications, comparing the original and optimized implementations. The analysis addresses the changes made, their rationale, their impact, and additional considerations relevant for a thesis, based on the provided code and testing details.
 
-#### S‑Box & Round Function Optimizations
+The optimized version of the GOST 28147-89 algorithm introduces several key modifications to enhance performance on STM32 microcontrollers. These changes are detailed below:
 
-#### Comparative Code Analysis
+### 1.1 Precomputed Substitution Table
+
+- **Original Implementation**: In the original version, the substitution step (`GOST_Crypt_Step`) processes each byte of the 32-bit input by splitting it into two 4-bit nibbles. Each nibble is substituted using one of eight S-boxes (128 bytes total, organized as 8 rows of 16 nibbles). For each byte, the code performs two memory lookups: one for the low nibble and one for the high nibble, using consecutive S-box rows. This results in eight lookups for a 32-bit word (two per byte across four bytes).
+- **Optimized Implementation**: The optimized version (`GOST_Crypt_Step_Opt`) uses a precomputed substitution table (`GOST_Subst_Table`, 1024 bytes) that maps each possible byte value (0–255) to its substituted byte for each of the four byte positions in a 32-bit word. The table is generated in `gost_opt_main()` by combining the low and high nibble substitutions for each byte, effectively precomputing the result of the two S-box lookups. During encryption, a single lookup per byte is performed, reducing the number of memory accesses from eight to four per 32-bit word.
+- **Code Example**:
+  - Original (per byte in `GOST_Crypt_Step`):
+    ```c
+    tmp = S.parts[m];
+    S.parts[m] = *(GOST_Table + (tmp & 0x0F)); // Low nibble
+    GOST_Table += 16;
+    S.parts[m] |= (*(GOST_Table + ((tmp & 0xF0) >> 4))) << 4; // High nibble
+    GOST_Table += 16;
+    ```
+  - Optimized (for all bytes in `GOST_Crypt_Step_Opt`):
+    ```c
+    result = Table[(result & 0xff)] | 
+             (Table[256 + ((result >> 8) & 0xff)] << 8) |
+             (Table[512 + ((result >> 16) & 0xff)] << 16) |
+             (Table[768 + ((result >> 24) & 0xff)] << 24);
+    ```
+
+> Full code for both versions can be found in the Appendix B.
+
+### 1.2 Loop Unrolling
+
+- **Original Implementation**: The original version (`GOST_Crypt_32_E_Cicle`) uses nested loops to iterate over the 32 rounds of the Feistel network. The outer loop runs three times (for the first 24 rounds, using keys K0–K7 repeatedly), and an inner loop processes each of the eight subkeys. The final eight rounds use keys K7–K0 in reverse order, handled by a separate loop.
+- **Optimized Implementation**: The optimized version (`GOST_Crypt_32_E_Cicle_Opt`) unrolls all 32 rounds, explicitly coding each round without loops. Each round calls `GOST_Crypt_Step_Opt` with the appropriate subkey, eliminating loop control overhead (e.g., counter increments, condition checks).
+- **Code Example**:
+  - Original (looped):
+    ```c
+    for(k=0; k<3; k++) {
+        for (j=0; j<8; j++) {
+            GOST_Crypt_Step(DATA, GOST_Table, *GOST_Key, _GOST_Next_Step);
+            GOST_Key++;
+        }
+        GOST_Key = GOST_Key_tmp;
+    }
+    ```
+  - Optimized (unrolled, partial):
+    ```c
+    tmp = *n1;
+    *n1 = *n2 ^ GOST_Crypt_Step_Opt(*n1, Table, GOST_Key[0], 0);
+    *n2 = tmp;
+    // Repeated for each round
+    ```
+
+> Full code for both versions can be found in the Appendix B.
+
+### 1.3 Data Handling
+
+- **Original Implementation**: The original version uses a `GOST_Data_Part` union to represent the 64-bit block, with two 32-bit halves (`half[0]` for N2, `half[1]` for N1). Data is copied into this structure, processed, and copied back, with byte-swapping (`_GOST_SWAP32`) applied if `_GOST_ROT==1` to handle endianness.
+- **Optimized Implementation**: The optimized version processes the 32-bit halves directly as `uint32_t` pointers (`n1` and `n2`), reducing overhead from union access. Byte-swapping is still applied, but the data handling is streamlined by working directly with the input buffer.
+- **Code Example**:
+  - Original (`GOST_Encrypt_SR`):
+    ```c
+    memcpy(&Data_prep, Data, Cur_Part_Size);
+    Data_prep.half[_GOST_Data_Part_N2_Half] = _GOST_SWAP32(Data_prep.half[_GOST_Data_Part_N2_Half]);
+    ```
+  - Optimized (`GOST_Encrypt_SR_Opt`):
+    ```c
+    Temp.half[_GOST_Data_Part_N1_Half] = _GOST_SWAP32(((uint32_t *)(Data + n * 8))[0]);
+    ```
+
+> Full code for both versions can be found in the Appendix B.

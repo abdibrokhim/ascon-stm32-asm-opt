@@ -22,3 +22,6 @@ en.wikipedia.org
 en.wikipedia.org
 .
 By optimizing ASCON for STM32 microcontrollers, I achieved a 39.6% speedup over the original size-optimized implementation, making it more suitable for IoT applications. The changes—efficient constant loading, interleaved operations, and bit-interleaving—demonstrate how architecture-specific tuning can enhance cryptographic performance without compromising security. These findings offer practical guidelines for developers and highlight the importance of tailoring algorithms to hardware constraints, paving the way for faster, more secure IoT systems.
+
+
+The optimized GOST 28147-89 implementation significantly improves performance on STM32 microcontrollers by using precomputed substitution tables and loop unrolling, reducing execution time by approximately 48%. The additional memory usage is acceptable given the STM32F4’s capabilities, making the optimized version well-suited for IoT applications requiring efficient cryptography. For a thesis, further exploration of energy efficiency, comparisons with other ciphers, and detailed performance benchmarking would provide valuable insights into the implementation’s practical impact.

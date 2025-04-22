@@ -28,18 +28,18 @@
         4.2.1. Profiling & Benchmarking Tools  
         4.2.2. Memory‑Footprint Analysis  
         4.2.3. Code Isolation & Modular Testing  
+        4.2.4. Optimization Combinations  
+        4.2.5. Identify space-wasting code  
     4.3. Bubble Sort Optimization  
-        4.3.1. Baseline C Implementation  
-        4.3.2. C‑Level Optimizations (flags, loop unrolling, etc.)  
-        4.3.3. Assembly‑Level Optimizations  
+        4.3.1. C‑Level Optimizations (flags, loop unrolling, etc.)  
+        4.3.2. Assembly‑Level Optimizations  
     4.4. ASCON Optimization  
-        4.4.1. Baseline C & Inline‑Assembly Code  
+        4.4.1. Experimental Setup
         4.4.2. AEAD ROUND_LOOP Optimization Strategy  
-        4.4.3. Side‑by‑Side Code Comparison  
     4.5. GOST 28147‑89 Optimization  
-        4.5.1. Baseline C & Inline‑Assembly Code  
-        4.5.2. S‑Box & Round Function Optimizations  
-        4.5.3. Comparative Code Analysis  
+        4.5.1. Precomputed Substitution Table
+        4.5.2. Loop Unrolling
+        4.5.3. Data Handling
 
 5. **Results**  
     5.1. Bubble Sort: Execution‑Time & Memory Metrics  

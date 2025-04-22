@@ -28,3 +28,15 @@ The optimized version is 39.6% faster than version [1] and 11.11% faster than ve
 - **Experiment 3:** 9.44 seconds (11.11% faster than version [4])
 
 The 11.11% improvement from version [4] to the optimized version stems from the combined effect of reduced memory accesses and improved instruction scheduling. The 39.6% speedup over version [1] highlights the cumulative impact of bit-interleaving (introduced in version [4]) and the additional optimizations.
+
+**Table 2: Performance Comparison of GOST Implementations**
+
+| Aspect                | Original Implementation | Optimized Implementation |
+|-----------------------|-------------------------|--------------------------|
+| **Substitution**      | Two S-box lookups per byte (8 total per 32-bit word) | Single precomputed table lookup per byte (4 total) |
+| **Rounds**            | Looped (nested loops for 32 rounds) | Unrolled (explicit 32 rounds) |
+| **Data Handling**     | Union-based (`GOST_Data_Part`) with copying | Direct 32-bit pointer access |
+| **Execution Time**    | 4:49 seconds (64 bytes) | 2:29 seconds (64 bytes) |
+| **Memory Usage**      | 128-byte S-box | 1024-byte precomputed table + 128-byte S-box |
+| **Code Size**         | Smaller (looped code) | Larger (unrolled code) |
+| **Security**          | Unchanged | Unchanged |
