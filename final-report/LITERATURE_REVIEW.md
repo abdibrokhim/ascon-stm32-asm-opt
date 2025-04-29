@@ -238,7 +238,7 @@ Verification successful: both implementations produce identical results
 Interestingly, our assembly implementation is actually slower than the C version. This is likely because the compiler is able to produce highly optimized code with -O3 for the C version. Let's improve our assembly implementation (refer to Materials and Methods section).
 
 
-### 3.4 Baseline Implementation of ASCON-AEAD128
+## 3.4 Baseline Implementation of ASCON-AEAD128
 
 This section presents a detailed implementation of the ASCON-AEAD128 algorithm in C, tailored for educational clarity and alignment with the NIST Lightweight Cryptography initial public draft published in 2023 (NIST Draft). ASCON, selected as the winner of NIST’s Lightweight Cryptography competition in February 2023, is designed for resource-constrained environments such as Internet of Things (IoT) devices, making it highly relevant for secure embedded systems like STM32 microcontrollers. The implementation focuses on the Authenticated Encryption with Associated Data (AEAD) mode, specifically ASCON-AEAD128, which provides both confidentiality and authenticity using a 128-bit key, 128-bit nonce, and 128-bit authentication tag. This baseline serves as a foundation for understanding ASCON’s structure and supports further optimization studies in this thesis.
 
@@ -437,15 +437,43 @@ Table: ASCON-AEAD128 Parameters
 
 > Full code implementation in Appendix A
 
+### Prior Research, Implementations, and Optimizations of ASCON
 
-### 3.5 GOST 28147-89: Encryption, Decryption, and Message Authentication Code Algorithms
+#### Primas and Schlaffer’s New ASCON Implementations
+Primas and Schlaffer (2022) presented optimized ASCON implementations for ARM v6-M and v7-M architectures at the NIST Lightweight Cryptography Workshop (New ASCON Implementations). Their work achieved code size reductions of 7–30% and cycle count reductions of 17–23% through techniques such as bit-interleaved permutation and in-place S-box computations. The bit-interleaved interface improved performance by 17% for ASCON-128 and 23% for ASCON-128a, leveraging 32-bit ARM instructions like funnel shifts. These optimizations are particularly effective for STM32 microcontrollers with limited flash and RAM, enhancing both speed and memory efficiency. [1]
 
-## Introduction and Background  
+#### NIST Status Update on ASCON (2022)
+The NIST status update from 2022 reported substantial performance gains for ASCON on STM32 microcontrollers (ARM v6-M), achieving up to 65% reductions in both code size and cycle counts (ASCON Status Update). This was accomplished through a joint speed and size refactoring, which optimized the round function using fewer instructions for the S-box and introduced bit-interleaved interface implementations. The update also highlighted code size comparisons across devices, as shown in Table 1, demonstrating ASCON’s efficiency compared to AES-GCM and SHA-256. [2]
+
+Table 1: Code Size Comparison for ASCON Implementations
+
+| Device     | AES-GCM | ASCON-128 | ASCON-128a | SHA-256 | ASCON-Hash |
+|------------|---------|-----------|------------|---------|------------|
+| ATmega328P | 3188    | 2754      | 3026       | 2432    | 1836       |
+| SAM D21    | 1648    | 1300      | 1424       | 944     | 760        |
+| ESP8266    | 2412    | 1004      | 1084       | 1116    | 652        |
+
+#### LaS³ Microcontroller Benchmarks
+The LaS³ benchmarks provide empirical performance data for ASCON on STM32 F103 and F746ZG microcontrollers, reporting cycle counts of 11.9–31.5 cycles per byte (LaS³ Benchmarks). These results, part of the public FELICS-AE dataset, offer a standardized framework for comparing cryptographic implementations. The benchmarks also noted an 8% throughput gain on STM32 F7/H7 devices using DMA-assisted AEAD, which overlaps permutation and block I/O operations. [3]
+
+#### Arduino-Class Study (2024)
+A 2024 study published in MDPI’s Applied Sciences evaluated ASCON’s performance on Arduino devices equipped with Cortex-M0 and M4 processors (Arduino Study). The study found ASCON to be 12% faster than ChaCha20, confirming its scalability to devices with minimal flash and RAM. This is particularly relevant for STM32-based IoT applications, where memory constraints are common. [4]
+
+#### Quest for Efficient ASCON Implementations
+A comprehensive survey by MDPI explores the design space for efficient ASCON implementations, covering both hardware and software optimizations (Quest for ASCON). The survey discusses architectural approaches such as serialized, unrolled, and round-based implementations, with round-based designs offering the best throughput-area trade-off. It also addresses side-channel attack countermeasures, including masking schemes like Threshold Implementation (TI) and Domain-Oriented Masking (DOM), which are critical for secure STM32 implementations. The survey reported energy savings of 11–48% in CMOS/MRAM designs and throughput up to 13 Gb/s in high-performance configurations. [5]
+
+The official ascon-c repository provides reference and optimized implementations for Cortex-M, including constant-time masked variants (ascon-c GitHub). [6] A multi-platform study by ORBilu (2021) offers a detailed cycle breakdown for ASCON’s permutation function, highlighting the effectiveness of Thumb-2 assembly for XOR-rotate-XOR patterns, saving up to 2 cycles per round on Cortex-M3/M4 (ORBilu Study). The NIST evaluation of ASCON’s selection provides rationale for its choice as a lightweight standard, emphasizing its efficiency and security (NIST Evaluation). [7]
+
+
+
+## GOST 28147-89: Encryption, Decryption, and Message Authentication Code Algorithms
+
+### Introduction and Background  
 **GOST 28147-89** is a Soviet/Russian government standard block cipher algorithm, first established in 1989, that defines both data encryption/decryption and message authentication code (MAC) generation procedures ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). The name "GOST" is an acronym for *Gosudarstvennyi Standard*, meaning "State Standard" in Russian. Developed during the late 1970s, the cipher was originally classified as *Top Secret* (later downgraded to *Secret* in 1990) within the USSR, and it remained undisclosed to the public until after the Soviet Union's dissolution ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). In 1994, the algorithm was declassified and released publicly as GOST 28147-89, intended as a national alternative to the U.S. DES (Data Encryption Standard) and designed with a similar Feistel network structure ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). The standard was made **mandatory in the Russian Federation** for all public-sector data processing systems, underscoring its national importance ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). Over the ensuing decades, GOST 28147-89 (sometimes referred to by the codename "Magma" in modern Russian standards) has been deployed in government and military applications for protecting classified communications, and it has been incorporated into various cryptographic libraries and protocols (e.g., via RFC 5830 for informational reference). Notably, the GOST 28147-89 cipher also underpins the legacy GOST hash function and forms the basis of a MAC generation method defined in the same standard.
 
 Historically, GOST 28147-89 was conceived as an **analogue to DES**, but with significant adjustments to increase security and longevity. While DES uses a 56-bit key and 16 rounds, GOST employs a much larger 256-bit key and 32 rounds of encryption, reflecting design decisions intended to resist brute-force attacks by orders of magnitude beyond DES’s capability ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)) ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). At the time of its design, Western block cipher design principles were not widely published in the USSR, yet GOST’s developers arrived at a structure broadly similar to DES’s Feistel construction, likely informed by open literature on DES and an independent cryptographic analysis. By doubling the number of rounds and quadrupling the key size, the architects of GOST 28147-89 sought to ensure a high security margin and future-proof the cipher against cryptanalytic advances. Moreover, unlike DES, the standard allowed the use of secret or customized S-boxes (substitution boxes) as an additional security parameter, theoretically increasing the complexity for an adversary who does not know the precise S-box values ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). This flexibility in S-box selection, combined with the algorithm’s extended key length, meant that GOST could, in principle, offer a much larger effective key space than DES if the S-boxes remain undisclosed ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). The trade-off was that, without fixed S-boxes in the original specification, interoperability required agreeing on specific S-box sets for implementation. Over time, standardized S-boxes were published (for example, in the Cryptographic Providers guidelines RFC 4357) to facilitate compatibility ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). 
 
-## Algorithm Overview and Feistel Structure  
+### Algorithm Overview and Feistel Structure  
 
 **GOST 28147-89 is a 64-bit block cipher** operating on 64-bit data blocks and using a 256-bit secret key ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). Like many classical block ciphers, GOST is built on a **Feistel network** structure with iterative rounds. Specifically, it performs 32 rounds of encryption transformations on the input block ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). Each round is a Feistel round in which one half of the data is transformed with a round function and combined with the other half. After 32 rounds, the two 32-bit halves are recombined to produce the 64-bit ciphertext output. (In GOST’s implementation, the final swapping of halves typical in Feistel ciphers is effectively handled by the round structure itself, so the output is obtained directly from the pair of registers after the last round.)
 
@@ -457,7 +485,7 @@ At a high level, this design mirrors that of DES in its Feistel construction, bu
 
 Importantly, GOST’s **256-bit key** is one of the largest for block ciphers of its era, far exceeding the 56-bit effective key of DES. The key is conceptually stored in eight 32-bit components, often labeled X0 through X7 ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). These serve as the subkeys for the round operations. The expanded key storage means GOST can incorporate a massive keyspace (2^256 possible keys). This was likely intended to thwart brute-force attacks even by adversaries with significant computing resources, providing a security margin that was thought to be impractical to overcome. Additionally, as noted, if the S-box tables are treated as secret parameters, they add an extra layer of key-like secrecy (on the order of 354 additional bits of entropy if one treats the S-box configuration as part of the key ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher)))). In practice, however, most modern implementations use publicly specified S-box sets for interoperability, and rely on the algorithm’s strength rather than obscurity of S-box values.
 
-## Round Function and Operations  
+### Round Function and Operations  
 
 Each of the 32 rounds in GOST 28147-89 uses an **F-function** (round function) that combines arithmetic addition, substitution through S-boxes, bit rotation, and XOR operations. The design of this round function is simple but effective, falling into the class of ARX (Add-Rotate-XOR) operations augmented with S-box substitution for nonlinearity. The following sequence outlines the transformation in one round (considering a round *i*, where the inputs are the 32-bit halves *N1* and *N2*, and the round subkey is *X_j* for some j depending on the key schedule):
 
@@ -484,7 +512,7 @@ where $X_j$ is the subkey used in that round, $S(\cdot)$ is the S-box substituti
 
 The **design rationale** behind these operations appears to favor simplicity and hardware efficiency, using basic arithmetic and bit-wise operations that map well onto 32-bit architectures. The combination of modular addition and XOR (along with S-boxes) means the cipher does not rely purely on linear operations; it injects non-linearity at two points: once through addition (though addition is *affine* rather than strictly linear in GF(2)) and again through the S-box lookup. The fixed rotation by 11 bits each round is a static diffusion mechanism (contrast with DES which uses a fixed permutation of bits after the S-boxes). By eliminating the need for a complex bit permutation or expansion operation, GOST’s round function remains quite compact. This likely reflects a design emphasis on **ease of implementation** in both hardware and software. In hardware, a 32-bit adder and a barrel-rotator are straightforward components, and S-box lookups can be implemented with small ROMs or logic tables. In software, addition and rotation are single CPU instructions on most architectures, making GOST relatively fast per round. The cost of this simplicity is that GOST requires more rounds than DES to achieve comparable security; however, given the small computational cost of each round and the absence of complex key schedule processing in-round, the overall cipher is efficient. 
 
-## Subkey Schedule (Key Expansion)  
+### Subkey Schedule (Key Expansion)  
 
 The **key schedule of GOST 28147-89** is notably simple. The 256-bit master key is divided into eight 32-bit words, labeled $X_0, X_1, \dots, X_7$ ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)), which serve directly as the subkeys in the encryption rounds. Unlike DES and many modern ciphers, GOST does not employ a complex key expansion algorithm with rotations or permutation of key bits per round; instead, it *reuses* these 32-bit key components in a fixed pattern over the 32 rounds. This design means the security of GOST does not depend on a one-way key schedule function – the subkeys are just the master key chunks reused – which simplifies analysis but also means there is less diffusion of key material across rounds. 
 
@@ -508,7 +536,7 @@ Because of the Feistel structure, the decryption process simply uses the subkeys
 
 The simplicity of GOST's key schedule is a double-edged sword. On one hand, it avoids the risk of inadvertently weakening the cipher through a poor key schedule design (since each key bit influences many rounds directly given the repetitions). On the other hand, it lacks the *key diffusion* that many modern ciphers have, where a single bit of the master key affects many subkeys and hence many round operations. In GOST, each 32-bit subkey affects exactly those rounds where it is used. However, since each subkey is used four times in encryption (three times forward, once backward) out of 32 rounds, each part of the key still has a broad influence on the encryption process. There are no known *weak keys* for GOST in the sense that a particular key leads to a degenerate behavior (in contrast to DES, which has a few weak keys due to the structure of the key schedule and S-box symmetry). The absence of weak keys is partly because the S-boxes can be arbitrary, breaking any symmetry, and because the addition and rotation operations do not exhibit linear key relations easily. In modern adaptations (e.g., the 2015 update of the standard), a slightly more complex key schedule or key derivation may be introduced to address theoretical weaknesses, but the original GOST 28147-89 keeps it straightforward ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))).
 
-## S-Boxes and Parameterization  
+### S-Boxes and Parameterization  
 
 A distinctive feature of GOST 28147-89 is its approach to **S-boxes** (substitution boxes). The cipher uses eight fixed 4x4 S-box tables per instantiation, but the values of these tables were *not explicitly specified* in the original 1989 standard ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). Instead, the standard allowed different organizations or applications to choose their own set of S-box values (often referred to as a "S-box tuple" or **parameter set**) to potentially tailor the cipher for specific domains or to keep them secret as an added security measure. This is in contrast to DES, which has fixed, publicly known S-boxes built into its design. 
 
@@ -518,7 +546,7 @@ Because the standard did not pin down specific S-box values, various **S-box set
 
 There is a caveat: if one treats S-boxes as secret, the security proof becomes twofold – one must trust both the algorithm and the secrecy of the S-box parameters. Over time, the cryptographic community has gravitated away from secret algorithm parameters (Kerckhoffs' principle advocates that a cipher's security should not rely on secret design, only on secret keys). Thus, modern practice with GOST is to use publicly known S-box sets that are believed to be strong. Indeed, by 2010, the **ISO/IEC 18033-3** standardization process and others evaluating GOST recommended specific S-boxes. The 2015 revision of the GOST standard (GOST R 34.12-2015) finally fixed an official S-box set for the cipher, removing ambiguity ([GOST (block cipher) - Wikipedia](https://en.wikipedia.org/wiki/GOST_(block_cipher))). In that revision, the cipher GOST 28147-89 with a fixed S-box is officially named "Magma." This change allows consistent interoperability and eases analysis – and it acknowledges that the benefit of secret S-boxes was largely theoretical, whereas the benefit of public well-analyzed S-boxes is practical security assurance.
 
-## Encryption and Decryption Process  
+### Encryption and Decryption Process  
 
 Using the components described above (the Feistel round function, subkey schedule, and S-boxes), we can now describe the **process of encrypting a 64-bit block** under GOST 28147-89 step by step. We assume a 64-bit plaintext block is given, and a 256-bit key has been loaded into the eight subkey registers $X_0 \dots X_7$. For clarity, let the plaintext halves be $N1_0$ and $N2_0$ (initial values of left and right 32-bit halves, respectively), and after $i$ rounds let $N1_i, N2_i$ be the half values.
 
@@ -540,7 +568,7 @@ In terms of performance, GOST 28147-89's 32 rounds make it somewhat slower than 
 
 Finally, it's important to note that GOST encryption in actual use is typically employed in a **mode of operation** (just like any block cipher). The standard itself describes several modes: Electronic Codebook (ECB), Counter (CTR), and feedback modes (CFB) for encryption, as well as a mode for MAC generation ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)) ([RFC 5830 - GOST 28147-89: Encryption, Decryption, and Message Authentication Code (MAC) Algorithms](https://datatracker.ietf.org/doc/html/rfc5830)). In ECB mode, described above, each 64-bit block is encrypted independently. In other modes, either an IV (initialization vector) and chaining are used to encrypt variable-length data securely, or a keystream is generated for stream cipher operation. The core cipher operations remain the same regardless of mode.
 
-## Message Authentication Code (MAC) Generation Mode  
+### Message Authentication Code (MAC) Generation Mode  
 
 In addition to encryption, GOST 28147-89 specifies a method for computing a **message authentication code** (MAC) using the block cipher. The MAC algorithm in GOST is essentially a specialized variant of a CBC-MAC, with the twist that only the first 16 rounds of the cipher are used for each block chaining step. The rationale for using 16 rounds (half the cipher) per block in MAC generation is not explicitly stated in the standard, but it is presumably to provide a balance between security and performance when processing potentially long messages – using only half the rounds per intermediate step doubles the speed of MAC computation, while the final MAC still benefits from a full encryption pass. The MAC generation is defined as follows for a message divided into $M$ blocks of 64 bits (with padding as needed):
 
@@ -562,3 +590,36 @@ This MAC mechanism is designed to detect any modification of the message blocks.
 One subtlety: Because only 16 rounds (instead of the full 32) are used per block mixing, there might be theoretical concerns about whether this truncated encryption is a pseudo-random permutation on each step. However, since the final output is subjected to a full 32-round encryption (16 rounds in the last chaining step plus 16 in the final output stage, effectively 32 on the last block), and earlier truncated encryptions are concealed by subsequent XORs, no practical weaknesses in the MAC procedure have been published. The GOST MAC is conceptually similar to well-known MAC constructions like CBC-MAC; its security rests on the difficulty of forging outputs without knowing the key.
 
 > Full code implementation in Appendix A
+
+### Prior Research, Implementations, and Optimizations of GOST 28147-89
+
+GOST 28147-89, a 64-bit block cipher with a 256-bit key, has seen less optimization research for microcontrollers compared to ASCON. However, several studies and resources provide insights into its implementation on STM32 devices.
+
+#### FPGA Implementation Study
+A study on implementing GOST 28147-89 on FPGA achieved a 12% reduction in slice usage through S-box RAM packing (FPGA GOST). Using a pipeline structure, the implementation reduced encryption time from 1280 ns to 2.59 ms for 1080p 50fps grayscale, achieving 5.96 Gbit/s performance. While focused on FPGA, techniques like pipelining and efficient S-box storage can inspire software optimizations for STM32, particularly for memory-constrained devices. [8]
+
+#### Optimization for 8-bit Microcontrollers
+A ResearchGate pre-print (2021) explored optimizing GOST for 8-bit microcontrollers, achieving a 30% flash memory saving by using a table-free S-box implementation (8-bit GOST). This approach recomputes S-boxes via affine transforms, reducing memory usage at the cost of additional computation. Such techniques are applicable to STM32 F0/F1 series, which often have limited flash memory. [9]
+
+#### Wokwi STM32/Arduino Demo
+A minimal C implementation of GOST is available on Wokwi, requiring only 2 kB of flash memory (Wokwi Demo). This serves as a baseline for further optimizations on STM32 and Arduino platforms, allowing researchers to experiment with custom tuning for Cortex-M architectures. [10]
+
+#### STMicroelectronics X-CUBE-CRYPTOLIB
+STMicroelectronics’ X-CUBE-CRYPTOLIB is reported to include a ready-made GOST cipher implementation, optimized for STM32 microcontrollers with hardware-accelerator hooks on STM32U5/H5 series (X-CUBE-CRYPTOLIB). The library is compiled with high optimization settings (-O3 -mcpu=cortex-mx) and supports constant-time execution, making it suitable for certified applications. However, some sources suggest GOST may not be explicitly listed among supported ciphers, indicating a need for further verification. [11]
+
+#### Security Evaluation of GOST
+An IACR ePrint paper (2011) provides a security evaluation of GOST 28147-89, analyzing its algebraic properties and structural characteristics (GOST Security). While not focused on implementation, the paper offers insights into S-box design and table layouts, which can influence optimization strategies for STM32 to balance performance and security. [12]
+
+
+- [1] Dobraunig, C., Eichlseder, M., Mendel, F., Primas, R., & Schläffer, M. (2022). New ascon implementations. In Fifth NIST Lightweight Cryptography Workshop.
+- [2] Dobraunig, C., Eichlseder, M., Mendel, F., & Schläer, M. (2020). Status update on ascon v1. 2. Submission to the NIST LWC competition.
+- [3] Renner, S., Pozzobon, E., & Mottok, J. (2019). Benchmarking software implementations of 1st round candidates of the NIST LWC project on microcontrollers. In Lightweight Cryptography Workshop.
+- [4] Sarasa Laborda, V., Hernández-Álvarez, L., Hernández Encinas, L., Sánchez García , J. I., & Queiruga-Dios, A. (2025). Study About the Performance of Ascon in Arduino Devices. Applied Sciences, 15(7), 4071. https://doi.org/10.3390/app15074071
+- [5] Mirigaldi, M., Piscopo, V., Martina, M., & Masera, G. (2025). The Quest for Efficient ASCON Implementations: A Comprehensive Review of Implementation Strategies and Challenges. Chips, 4(2), 15. https://doi.org/10.3390/chips4020015
+- [6] Official ascon-c GitHub Repository for Implementations. (https://github.com/ascon/ascon-c)
+- [7] Cardoso dos Santos, L., & Großschädl, J. (2021, November). An evaluation of the multi-platform efficiency of lightweight cryptographic permutations. In International Conference on Information Technology and Communications Security (pp. 70-85). Cham: Springer International Publishing.
+- [8] Aktaş, H. (2018, October). Implementation of GOST 28147-89 encryption and decryption algorithm on FPGA. In International Conference on Cyber Security and Computer Science (ICONCS’18), Safranbolu, Turkey.
+- [9] Shtanov, E. Y., & Polyakov, M. V. (2021). Optimizing GOST R 34.12" Magma" Algorithms for 8-Bit Microcontrollers. Mathematics and Mathematical Modeling, (2), 21.
+- [10] Wokwi STM32 GOST 28147-89 Demo Code. (https://wokwi.com/projects/420790204194849793)
+- [11] STMicroelectronics X-CUBE-CRYPTOLIB Documentation. (https://www.st.com/en/embedded-software/x-cube-cryptolib.html)
+- [12] Courtois, N. T. (2012). Security evaluation of GOST 28147-89 in view of international standardisation. Cryptologia, 36(1), 2-13.
