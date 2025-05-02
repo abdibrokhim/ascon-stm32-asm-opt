@@ -1,5 +1,6 @@
 # Code Optimization for STM32F103/STM32F407 Discovery Boards – Time and Memory Analysis
 
+> presentation slides: https://www.canva.com/design/DAGmTYw2uQs/w0UVdtiPFAGFmrfFxmC2yg/view?utm_content=DAGmTYw2uQs&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3fa8cc5f4c
 
 ## Abstract
 
